@@ -37,9 +37,8 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './src/sidebars.ts',
-          // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/HeliosLang/website',
+            'https://github.com/HeliosLang/website/blob/main',
         },
         theme: {
           customCss: './src/css/custom.css',
