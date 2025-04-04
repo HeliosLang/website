@@ -128,7 +128,7 @@ const features: FeatureItem[] = [
   title: 'Designed for audits',
   description: (
     <>
-      The Helios Domain Specific Language (DSL) is a simple C-like language, designed for readability and auditable.
+      The Helios Domain Specific Language (DSL) is a simple C-like language, designed for readability and auditability.
     </>
   ),
 },
@@ -144,7 +144,7 @@ const features: FeatureItem[] = [
   title: 'No external dependencies',
   description: (
     <>
-      The Helios compiler and tx-building SDK don't have external dependencies, minimizing supply chain risks.
+      The Helios SDK doesn't have any external dependencies, minimizing supply chain risk.
     </>
   ),
 },
