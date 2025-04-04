@@ -39,7 +39,7 @@ const config: Config = {
           sidebarPath: './src/sidebars.ts',
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/HeliosLang/docs',
+            'https://github.com/HeliosLang/website',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -65,7 +65,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'https://github.com/HeliosLang',
+          href: 'https://github.com/orgs/HeliosLang/repositories?q=visibility%3Apublic+archived%3Afalse+sort%3Aname-asc',
           label: 'GitHub',
           position: 'right',
         },
