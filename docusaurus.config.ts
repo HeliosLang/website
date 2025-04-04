@@ -5,8 +5,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'Helios Lang',
-  tagline: 'Smart contract framework for Cardano',
+  title: 'Helios',
+  tagline: 'Cardano smart contract DSL and JS/TS SDK',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -18,7 +18,7 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'HeliosLang', // Usually your GitHub org/user name.
-  projectName: 'doc', // Usually your repo name.
+  projectName: 'docs', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -36,26 +36,10 @@ const config: Config = {
       'classic',
       {
         docs: {
-          sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
+          sidebarPath: './src/sidebars.ts',
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/HeliosLang/doc',
-        },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
+            'https://github.com/HeliosLang/docs',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -68,19 +52,18 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/logo.png',
     navbar: {
-      title: 'Helios Lang',
+      title: 'Helios',
       logo: {
-        alt: 'Helios Lang',
+        alt: 'Helios',
         src: 'img/logo.png',
       },
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          sidebarId: 'documentationSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Documentation',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/HeliosLang',
           label: 'GitHub',
@@ -92,16 +75,16 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Documentation',
           items: [
             {
-              label: 'Tutorial',
-              to: '/docs/intro',
+              label: 'Language guide',
+              to: '/docs/category/language-guide',
             },
           ],
         },
         {
-          title: 'Community',
+          title: 'Support',
           items: [
             {
               label: 'Discord',
@@ -116,22 +99,9 @@ const config: Config = {
               href: 'https://cardano.stackexchange.com/questions/tagged/helios',
             },
           ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
-            },
-          ],
-        },
+        }
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `© ${new Date().getFullYear()} Helios Lang`,
     },
     prism: {
       theme: prismThemes.github,

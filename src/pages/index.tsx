@@ -1,44 +1,173 @@
-import type {ReactNode} from 'react';
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
-import Heading from '@theme/Heading';
-
-import styles from './index.module.css';
-
-function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
-  return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
-          {siteConfig.title}
-        </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro">
-            Docusaurus Tutorial - 5min ⏱️
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
+import type {ReactNode} from 'react'
+import { styled } from "styled-components"
+import Link from '@docusaurus/Link'
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
+import {type ColorMode, useColorMode} from '@docusaurus/theme-common'
+import { ColorModeProvider } from '@docusaurus/theme-common/internal'
+import Layout from '@theme/Layout'
+import Heading from '@theme/Heading'
+import { FeatureItem, features } from './features'
 
 export default function Home(): ReactNode {
-  const {siteConfig} = useDocusaurusContext();
+  const {siteConfig} = useDocusaurusContext()
+  
   return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
-      <HomepageHeader />
-      <main>
-        <HomepageFeatures />
-      </main>
-    </Layout>
-  );
+    <ColorModeProvider>
+      <Layout
+        title={siteConfig.title}
+        description="Description will go into a meta tag in <head />">
+
+        <StyledWrapper>
+          <Hero />
+          <Main />
+        </StyledWrapper>
+      </Layout>
+    </ColorModeProvider>
+  )
 }
+
+function Hero() {
+  const {siteConfig} = useDocusaurusContext()
+
+  return (
+    <StyledHero>
+      <HeroTitle>
+        {siteConfig.title}
+      </HeroTitle>
+      <HeroSubtitle>{siteConfig.tagline}</HeroSubtitle>
+      <HeroButtons/>
+    </StyledHero>
+  )
+}
+
+function HeroButtons() {
+  return (
+    <StyledHeroButtons>
+      <Link
+        className="button button--secondary button--lg"
+        to="/docs/intro">
+        Get started
+      </Link>
+    </StyledHeroButtons>
+  )
+}
+
+const StyledHeroButtons = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const StyledHero = styled.header`
+  max-height: 400px;
+  padding: 64px 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  color: white;
+  background: linear-gradient(-15deg, #937caf, #7954be);
+
+  @media screen and (max-width: 996px) {
+    padding: 32px 0;
+  }
+`
+
+const HeroTitle = styled.h1`
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0;
+  flex: 0;
+  line-height: 48px;
+`
+
+const HeroSubtitle = styled.p`
+  font-size: 24px;
+  margin-bottom: 0;
+  flex: 0;
+`
+
+const StyledWrapper = styled.div`
+  flex: 1;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;  
+`
+
+function Main() {
+  const {colorMode} = useColorMode()
+
+  return (
+    <StyledMain $colorMode={colorMode}>
+      <HomepageFeatures />
+    </StyledMain>
+  )
+}
+
+type StyledMainProps = {
+  $colorMode: ColorMode
+}
+
+const StyledMain = styled.main<StyledMainProps>`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: ${({$colorMode}) => $colorMode == "dark" ? "#242526" : "#eee"};
+`
+
+function HomepageFeatures(): ReactNode {
+  return (
+    <StyledHomepageFeatures>
+      {features.map((props, i) => (
+        <Feature key={i} {...props} />
+      ))}
+    </StyledHomepageFeatures>
+  )
+}
+
+const StyledHomepageFeatures = styled.section`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: space-around;
+  gap: 20px;
+  margin: 20px 20px;
+`
+
+function Feature({title, description}: FeatureItem) {
+  const {colorMode} = useColorMode()
+
+  return (
+    <StyledFeature $colorMode={colorMode}>      
+      <Heading as="h3">{title}</Heading>
+      <p>{description}</p>
+    </StyledFeature>
+  )
+}
+
+type StyledFeatureProps = {
+  $colorMode: ColorMode
+}
+
+const  StyledFeature = styled.div<StyledFeatureProps>`
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  max-width: 350px;
+
+  ${({$colorMode}) => $colorMode == "dark" ? `
+    background-color: #eee;
+    color: black;
+  ` : `
+    background-color: #303846;
+    color: white;
+  `}
+`

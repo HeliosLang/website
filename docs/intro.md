@@ -1,47 +1,29 @@
 ---
 sidebar_position: 1
+sidebar_label: Get started
 ---
+# Introduction
 
-# Tutorial Intro
+[Helios](https://github.com/Hyperion-BT/Helios) is a Javascript/Typescript smart contract SDK for [Cardano](https://www.cardano.org). Helios is all you need to build dApps on Cardano, including a simple smart contract language: the **[Helios language](./lang/index.md)**.
 
-Let's discover **Docusaurus in less than 5 minutes**.
+## Example smart contract
 
-## Getting Started
+```helios
+spending always_true 
 
-Get started by **creating a new site**.
-
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
-
-### What you'll need
-
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
-
-## Generate a new site
-
-Generate a new Docusaurus site using the **classic template**.
-
-The classic template will automatically be added to your project after you run the command:
-
-```bash
-npm init docusaurus@latest my-website classic
+func main(_datum, _redeemer) -> Bool {
+    true
+}
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+## Structure of this book
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+Before starting to use Helios to create smart contracts and build dApps it is important to understand Cardano's eUTxO model very well. If you don't yet, we recommend you read the [Understanding eUTxOs](./understanding-eutxos.md) preface first.
 
-## Start your site
+[Chapter 1](./lang/index.md) covers the language, including a complete reference of the language builtins.
 
-Run the development server:
+[Chapter 2](./api/index.md) covers how to use the Helios API to compile smart contracts, and create smart contract transactions, including a complete reference of the library exports.
 
-```bash
-cd my-website
-npm run start
-```
+[Chapter 3](./cli/index.md) covers how to use the Helios CLI to build dApps, including a complete reference of the CLI commands.
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+[Chapter 4](./further-reading/index.md) contains a variety of articles to help you become a better Cardano dApp architect.

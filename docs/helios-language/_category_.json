@@ -1,0 +1,8 @@
+{
+  "label": "Language guide",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "The Helios language is a purely functional programming language, with a simple curly braces syntax. It is inspired by Go and Rust. The Helios language is designed for optimal auditability."
+  }
+}
