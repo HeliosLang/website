@@ -2,28 +2,68 @@
 sidebar_position: 1
 sidebar_label: Get started
 ---
-# Introduction
+# Get started
 
-[Helios](https://github.com/Hyperion-BT/Helios) is a Javascript/Typescript smart contract SDK for [Cardano](https://www.cardano.org). Helios is all you need to build dApps on Cardano, including a simple smart contract language: the **[Helios language](./lang/index.md)**.
+Create a new directory and initialize npm:
+```sh
+$ mkdir helios_get_started
+$ cd ./helios_get_started
+$ npm init es6 -y
+```
 
-## Example smart contract
+Install the compiler and utility libraries:
+```
+$ npm install @helios-lang/compiler @helios-lang/codec-utils @helios-lang/uplc
+```
 
+Create a file called `validator.hl`, with the following content:
 ```helios
-spending always_true 
+spending redeemer_equals_datum
 
-func main(_datum, _redeemer) -> Bool {
-    true
+func main(datum: Int, redeemer: Int) -> () {
+    assert(redeemer == datum, "redeemer not equal to datum")
 }
 ```
 
-## Structure of this book
+Create a JS script called `compile.js`, with the following content:
+```js
+import { readFileSync } from "node:fs"
+import { bytesToHex } from "@helios-lang/codec-utils"
+import { Program } from "@helios-lang/compiler"
+import { makeIntData, makeUplcDataValue } from "@helios-lang/uplc"
 
-Before starting to use Helios to create smart contracts and build dApps it is important to understand Cardano's eUTxO model very well. If you don't yet, we recommend you read the [Understanding eUTxOs](./understanding-eutxos.md) preface first.
+// compile the validator
+const src = readFileSync("./validator.hl").toString()
+const program = new Program(src)
+const uplc = program.compile()
 
-[Chapter 1](./lang/index.md) covers the language, including a complete reference of the language builtins.
+// test with a dummy script context
+const datum = makeUplcDataValue(makeIntData(0))
+const redeemer = makeUplcDataValue(makeIntData(0))
+const scriptContext = makeUplcDataValue(makeIntData(0))
+const { result } = uplc.eval([datum, redeemer, scriptContext])
 
-[Chapter 2](./api/index.md) covers how to use the Helios API to compile smart contracts, and create smart contract transactions, including a complete reference of the library exports.
+// check the return value
+if ("right" in result) {
+    if (result.right.kind != "unit") {
+        throw new Error(`unexpected return value, expected '()' but got '${result.right.toString()}'`)
+    }
+} else {
+    throw new Error(`evaluation failed: ${result.left.error}`)
+}
 
-[Chapter 3](./cli/index.md) covers how to use the Helios CLI to build dApps, including a complete reference of the CLI commands.
+// serialize the compiled validator
+console.log(bytesToHex(uplc.toCbor()))
+```
 
-[Chapter 4](./further-reading/index.md) contains a variety of articles to help you become a better Cardano dApp architect.
+Run the script:
+```sh
+$ node ./compile.js
+581c581a01000022233225333573466e1c00400852616375a0066eb40081
+```
+
+The printed output is the hex encoded bytecode of the validator.
+
+## Further reading
+
+Before starting to use Helios to create smart contracts and build dApps it is important to understand Cardano's eUTxO model very well. If you don't yet, we recommend you read the [Understanding eUTxOs](./understanding-eutxos) preface first.

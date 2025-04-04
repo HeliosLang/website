@@ -83,7 +83,7 @@ const config: Config = {
           ],
         },
         {
-          title: 'Support',
+          title: 'Community',
           items: [
             {
               label: 'Discord',
