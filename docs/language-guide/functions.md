@@ -3,9 +3,9 @@ sidebar_position: 6
 ---
 # Functions
 
-## Statements
+## Function statements
 
-Function statements are defined using the `func` keyword. Helios has no `return` statement, the last expression in a function is *implicitly returned* (like in Rust):
+Function statements are defined using the `func` keyword. Helios has no `return` statement, the last expression in a function is implicitly returned:
 
 ```helios
 func add(a: Int, b: Int) -> Int {
@@ -96,7 +96,7 @@ Named arguments are mostly used when calling the [`copy()`](../user-defined-type
 
 ## Multiple return values
 
-A Helios function can return multiple values using [tuples](../containers#tuple):
+A Helios function can return multiple values using [tuples](./containers#tuple):
 
 ```helios
 func swap(a: Int, b: Int) -> (Int, Int) {
@@ -130,9 +130,9 @@ Functions don't have to return a value, and can return *void* instead, denoted b
 
 Functions that return void can't be called in assignments.
 
-Helios has three builtin functions that return void: `print`, `error`, `assert`.
+Helios has three builtin functions that return void: `assert`, `error` and `print`.
 
-In the following example, the validator entry point returns void, and the user-defined `assert_small_even()` function also returns void.
+### Example
 
 ```helios
 spending my_validator
