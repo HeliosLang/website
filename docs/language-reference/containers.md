@@ -1,6 +1,3 @@
----
-sidebar_position: 4
----
 # Container types
 
 Helios has 4 **container** types:

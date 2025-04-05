@@ -1,6 +1,3 @@
----
-sidebar_position: 3
----
 # Primitive types
 
 Helios has 5 **primitive** types:

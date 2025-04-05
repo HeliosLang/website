@@ -36,7 +36,7 @@ const config: Config = {
       'classic',
       {
         docs: {
-          sidebarPath: './src/sidebars.ts',
+          sidebarPath: './sidebars.ts',
           editUrl:
             'https://github.com/HeliosLang/website/blob/main',
         },
@@ -69,6 +69,12 @@ const config: Config = {
           position: 'right',
         },
       ],
+    },
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true,
+      },
     },
     footer: {
       style: 'dark',

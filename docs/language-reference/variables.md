@@ -1,6 +1,3 @@
----
-sidebar_position: 2
----
 # Variables
 
 Variables in Helios can be defined inside function bodies using assignment expressions, and at the *top-level* of a script using `const` statements.
