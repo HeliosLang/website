@@ -12,6 +12,8 @@
         "target": "esnext",
         "lib": ["es6", "es2022", "dom"]
     },
-    "include": ["node_modules/@helios-lang/*/src/**/*.js"],
+    "include": [
+        "node_modules/@helios-lang/*/src/**/*.js"
+    ],
     "exclude": ["node_modules/@helios-lang/type-utils/src/typedoc-external-links-resolver.js"]
 }

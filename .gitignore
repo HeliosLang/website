@@ -5,6 +5,13 @@ dist
 typedoc
 docs/sdk/cbor
 docs/sdk/codec-utils
+docs/sdk/compiler
 docs/sdk/crypto
-docs/sdk/type-utils
+docs/sdk/ledger
+docs/sdk/tx-utils
+docs/sdk/uplc
+docs/sdk/plumbing/compiler-utils
+docs/sdk/plumbing/era
+docs/sdk/plumbing/ir
+docs/sdk/plumbing/type-utils
 _typedoc_.json
