@@ -4,5 +4,7 @@ build
 dist
 typedoc
 docs/sdk/cbor
+docs/sdk/codec-utils
 docs/sdk/crypto
+docs/sdk/type-utils
 _typedoc_.json

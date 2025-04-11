@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from "node:fs"
  */
 
 async function main() {
-    for (let pkg of ["cbor", "crypto"]) {
+    for (let pkg of ["cbor", "codec-utils", "crypto", "type-utils"]) {
         writePackageDocs(pkg)
     }
 }
@@ -20,7 +20,7 @@ function writePackageDocs(pkgName) {
      */
     const pkgDoc = JSON.parse(readFileSync(`./docs/sdk/${pkgName}/_typedoc_.json`).toString())
 
-    writeFileSync(`./docs/sdk/${pkgName}/index.md`, `---\ncustom_edit_url: https://github.com/HeliosLang/${pkgName}/blob/main/README.md\n---\n${stringifyCommentDisplayParts(pkgDoc.readme)}`)
+    writeFileSync(`./docs/sdk/${pkgName}/index.md`, `---\nsidebar_label: @helios-lang/${pkgName}\ncustom_edit_url: https://github.com/HeliosLang/${pkgName}/blob/main/README.md\n---\n${stringifyCommentDisplayParts(pkgDoc.readme)}`)
 
     for (let child of pkgDoc.children) {
         const name = child.name

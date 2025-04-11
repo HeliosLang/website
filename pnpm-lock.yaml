@@ -17,12 +17,6 @@ importers:
       '@docusaurus/theme-common':
         specifier: ^3.7.0
         version: 3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.1.0(@types/react@19.1.0)(react@19.1.0))(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.6.3))(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@helios-lang/codec-utils':
-        specifier: ^0.3.4
-        version: 0.3.4
-      '@helios-lang/type-utils':
-        specifier: ^0.2.9
-        version: 0.2.9
       '@mdx-js/react':
         specifier: ^3.0.0
         version: 3.1.0(@types/react@19.1.0)(react@19.1.0)
@@ -57,9 +51,15 @@ importers:
       '@helios-lang/cbor':
         specifier: ^0.3.1
         version: 0.3.1
+      '@helios-lang/codec-utils':
+        specifier: ^0.3.4
+        version: 0.3.4
       '@helios-lang/crypto':
         specifier: ^0.2.3
         version: 0.2.3
+      '@helios-lang/type-utils':
+        specifier: ^0.2.9
+        version: 0.2.9
       '@types/react':
         specifier: ^19.1.0
         version: 19.1.0
