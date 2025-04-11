@@ -1,3 +1,7 @@
+---
+sidebar_position: 12
+---
+
 # Generics
 
 Helios supports generic type parameters for [functions](./functions), [structs](./structs), and [enums](./enums). The syntax for generics is similar to [lists](./builtins/list.md), [`Map`](./builtins/map.md) and [`Option`](./builtins/option.md).

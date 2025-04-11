@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Container types
 
 Helios has 4 **container** types:
@@ -18,9 +22,9 @@ my_ints = []Int{1, 2, 3, 4, 5}
 x: Int = some_ints.get(2) // x == 3
 ```
 
-> **Note**: lists aren't indexed with `[...]`. Instead the [`get`](./builtins/list.md#methods) method can be used. Indices are 0-based.
+> **Note**: lists aren't indexed with `[...]`. Instead the [`get`](./builtins/list#get) method can be used. Indices are 0-based.
 
-More information about lists can be found [here](./builtins/list.md).
+More information about lists can be found [here](./builtins/list).
 
 ## `Map`
 
@@ -37,7 +41,7 @@ my_map = Map[String]Int{
 print(my_map.get("zero").show()) // prints '0'
 ```
 
-More information about maps can be found [here](./builtins/map.md).
+More information about maps can be found [here](./builtins/map).
 
 
 ## `Option`
@@ -59,12 +63,12 @@ some_int = Option[Int]::Some{42}
 none_int = Option[Int]::None
 ```
 
-If you expect `Some`, you can assign, and even [destructure](./user-defined-types/destructuring.md), using the correct type annotation. Helios will automatically turn the assignment into a runtime type assertion (any [`enum`](./user-defined-types/enums.md) can take advantage of this):
+If you expect `Some`, you can assign, and even [destructure](./destructuring), using the correct type annotation. Helios will automatically turn the assignment into a runtime type assertion (any [`enum`](./enums) can take advantage of this):
 ```helios
 Option[Int]::Some{my_int} = option
 ```
 
-More information about `Option` can be found [here](./builtins/option.md).
+More information about `Option` can be found [here](./builtins/option).
 
 ## Tuple
 

@@ -1,3 +1,7 @@
+---
+sidebar_position: 9
+---
+
 # Destructuring
 
 [Switch cases](./enums.md#switch) and [assignments](../variables.md#assignment) have special syntax for destructuring user-defined [structs](./structs.md) and [enum](./enums.md) members.

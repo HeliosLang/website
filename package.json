@@ -3,32 +3,40 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "docusaurus build --out-dir ./dist",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
+    "build": "pnpm run build:sdk && docusaurus build --out-dir ./dist",
+    "build:sdk": "pnpm run build:sdk:cbor && pnpm run build:sdk:crypto && node ./build.sdk.mjs",
+    "build:sdk:cbor": "typedoc node_modules/@helios-lang/cbor/src/index.js --tsconfig ./jsconfig.json --json ./docs/sdk/cbor/_typedoc_.json",
+    "build:sdk:crypto": "typedoc node_modules/@helios-lang/crypto/src/index.js --tsconfig ./jsconfig.json --json ./docs/sdk/crypto/_typedoc_.json",
     "clear": "docusaurus clear",
+    "deploy": "docusaurus deploy",
+    "docusaurus": "docusaurus",
     "serve": "docusaurus serve",
+    "start": "docusaurus start",
+    "swizzle": "docusaurus swizzle",
+    "typecheck": "tsc",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",
     "@docusaurus/preset-classic": "3.7.0",
     "@docusaurus/theme-common": "^3.7.0",
+    "@helios-lang/codec-utils": "^0.3.4",
+    "@helios-lang/type-utils": "^0.2.9",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "styled-components": "^6.1.17"
+    "styled-components": "^6.1.17",
+    "typedoc": "^0.28.2"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.7.0",
     "@docusaurus/tsconfig": "3.7.0",
     "@docusaurus/types": "3.7.0",
+    "@helios-lang/cbor": "^0.3.1",
+    "@helios-lang/crypto": "^0.2.3",
     "@types/react": "^19.1.0",
     "typescript": "~5.6.2"
   },

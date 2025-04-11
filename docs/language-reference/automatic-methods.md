@@ -1,3 +1,7 @@
+---
+sidebar_position: 10
+---
+
 # Automatic methods
 
 The following (associated) methods and operators are automatically defined on all user and builtin types (except function types).

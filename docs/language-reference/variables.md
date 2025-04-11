@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Variables
 
 Variables in Helios can be defined inside function bodies using assignment expressions, and at the *top-level* of a script using `const` statements.
@@ -10,7 +14,7 @@ Inside a function body, variables are defined using assignment expressions:
 my_number = 42
 ```
 
-Here `my_number` has value `42`, and has inferred type [`Int`](./builtins/int.md). 
+Here `my_number` has value `42`, and has inferred type [`Int`](./builtins/int). 
 
 ## Reassignment
 
@@ -36,7 +40,7 @@ Variables can also be defined at the *top-level* of a script, or inside `struct`
 const AGE = 123
 ```
 
-`const` statements can be [`changed`](../api/reference/classes/Program.md#parameters-1) using the Helios API (see [`parameterized contracts`](./script-structure/parameterized.md)).
+`const` statements can be [`changed`](../api/reference/classes/Program.md#parameters-1) using the Helios API (see [`parameterized contracts`](./validators#parameters)).
 
 > **Note**: the right-hand side of `const` can contain complex expressions and even function calls. The compiler is smart enough to evaluate these at compile-time.
 

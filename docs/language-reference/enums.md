@@ -1,3 +1,7 @@
+---
+sidebar_position: 8
+---
+
 # Enums
 
 Enums are used to represent types that have multiple variants (sometimes called [*tagged unions* or *sum types*](https://en.wikipedia.org/wiki/Tagged_union)). These are useful for datums and redeemers.

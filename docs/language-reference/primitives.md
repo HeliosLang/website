@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Primitive types
 
 Helios has 5 **primitive** types:
@@ -96,7 +100,7 @@ my_bytes = #48656c6c6f20776f726c64
 my_bytes = b"Hello world"
 ```
 
-All builtin and user types can be converted into a `ByteArray` using the builtin [`serialize`](./user-defined-types/methods/automatic-methods.md#serialize) method:
+All builtin and user types can be converted into a `ByteArray` using the builtin [`serialize`](./validators#parameters) method:
 
 ```helios
 cbor_bytes = 123.serialize() // cbor encoding of 123

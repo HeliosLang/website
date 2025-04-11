@@ -1,3 +1,7 @@
+---
+sidebar_position: 6
+---
+
 # Functions
 
 All Helios functions are pure, which means they don't have side effects (except throwing errors) and always return the same result when given the same arguments.

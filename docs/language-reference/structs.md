@@ -1,3 +1,7 @@
+---
+sidebar_position: 7
+---
+
 # Structs
 
 A struct in Helios is a named grouping of types (sometimes called a [*product type*](https://en.wikipedia.org/wiki/Product_type)). They are similar to structs in other languages (e.g. C, Go and Rust):

@@ -1,3 +1,7 @@
+---
+sidebar_position: 11
+---
+
 # Operators
 
 The following operators are defined on many of the [builtins](./builtins/index.md):

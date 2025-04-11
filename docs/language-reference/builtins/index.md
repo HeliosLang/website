@@ -1,3 +1,7 @@
+---
+sidebar_position: 15
+---
+
 # Builtins
 
 This section contains a reference of all the Helios builtins.

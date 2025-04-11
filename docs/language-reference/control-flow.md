@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # Control flow
 
 Helios has conventional `if-else` branching, and also a `switch` expression for enum values.

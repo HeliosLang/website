@@ -1,3 +1,7 @@
+---
+sidebar_position: 13
+---
+
 # Validators
 
 Helios validator scripts have a function called `main` that returns a boolean (`true`  or `false`), or void (`()`).

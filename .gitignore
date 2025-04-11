@@ -2,3 +2,7 @@ node_modules
 .docusaurus
 build
 dist
+typedoc
+docs/sdk/cbor
+docs/sdk/crypto
+_typedoc_.json
