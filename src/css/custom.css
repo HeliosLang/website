@@ -15,6 +15,7 @@
   --ifm-color-primary-lightest: #6b37ca;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --doc-sidebar-width: 400px !important;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -43,4 +44,50 @@ nav.navbar {
 
 [data-theme='dark'] .navbar__logo > img {
   filter:  brightness(0) invert(1);
+}
+
+.class_badge, .constant_badge, .function_badge, .interface_badge, .namespace_badge, .type_badge {
+  display: flex;
+  flex-direction: row;
+  flex: 0;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.class_badge::after, .constant_badge::after, .function_badge::after, .interface_badge::after, .namespace_badge::after, .type_badge::after {
+  background-color: var(--ifm-color-emphasis-200);
+  font-size: 1em;
+  max-height: 1.8em;
+  font-family: Courier, monospace;
+  font-weight: bold;
+  padding: 0px 10px;
+  border-radius: 0.2em;
+  display: flex;
+  align-items: center;
+  margin: 0px 10px;
+  justify-content: center;
+}
+
+.class_badge::after {
+  content: "class";
+}
+
+.constant_badge::after {
+  content: "const";
+}
+
+.function_badge::after {
+  content: "function";
+}
+
+.interface_badge::after {
+  content: "interface";
+}
+
+.namespace_badge::after {
+  content: "namespace";
+}
+
+.type_badge::after {
+  content: "type";
 }
