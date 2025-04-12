@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Credential
+title: Credential
+sidebar_label: Credential
+sidebar_class_name: enum_badge
 ---
-# `Credential`
+
+# <span className="enum_badge">Credential</span>
 
 Represents the non-staking part of an [`Address`](./address.md). Internally represented as an enum with two variants: 
   * `PubKey` (wraps [`PubKeyHash`](./pubkeyhash.md)) 

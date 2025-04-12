@@ -1,7 +1,10 @@
 ---
-sidebar_label: T OutputDatum
+title: OutputDatum
+sidebar_label: OutputDatum
+sidebar_class_name: enum_badge
 ---
-# `OutputDatum`
+
+# <span className="enum_badge">OutputDatum</span>
 
 Represents that datum data of a [`TxOutput`](./txoutput.md) instance.
 

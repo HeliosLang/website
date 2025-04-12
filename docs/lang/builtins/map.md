@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Map
+title: Map
+sidebar_label: Map
+sidebar_class_name: type_badge
 ---
-# `Map`
+
+# <span className="type_badge">Map</span>
 
 List of key-value pairs. The insertion order of the key-value pairs matters.
 

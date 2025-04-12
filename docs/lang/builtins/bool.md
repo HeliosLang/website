@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Bool
+title: Bool
+sidebar_label: Bool
+sidebar_class_name: type_badge
 ---
-# `Bool`
+
+# <span className="type_badge">Bool</span>
 
 Represents a boolean value (`true`/`false`).
 

@@ -1,7 +1,10 @@
 ---
-sidebar_label: T List
+title: List
+sidebar_label: List
+sidebar_class_name: type_badge
 ---
-# List
+
+# <span className="type_badge">List</span>
 
 Helios linked-list type.
 

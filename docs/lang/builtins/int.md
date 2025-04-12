@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Int
+title: Int
+sidebar_label: Int
+sidebar_class_name: type_badge
 ---
-# `Int`
+
+# <span className="type_badge">Int</span>
 
 This is an unbounded integer (like Haskell's `Integer` type).
 

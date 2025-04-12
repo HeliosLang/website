@@ -1,7 +1,10 @@
 ---
-sidebar_label: N ScriptContext
+title: ScriptContext
+sidebar_label: ScriptContext
+sidebar_class_name: namespace_badge
 ---
-# `ScriptContext`
+
+# <span className="namespace_badge">ScriptContext</span>
 
 The `ScriptContext` contains all the metadata related to a signed Cardano transaction and is often an important argument of the validator script `main` function.
 

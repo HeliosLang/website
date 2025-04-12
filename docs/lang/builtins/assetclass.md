@@ -1,7 +1,10 @@
 ---
-sidebar_label: T AssetClass
+title: AssetClass
+sidebar_label: AssetClass
+sidebar_class_name: type_badge
 ---
-# `AssetClass`
+
+# <span className="type_badge">AssetClass</span>
 
 Represents a unique token on the blockchain using its [`MintingPolicyHash`](./mintingpolicyhash.md) and its token name (as a [`ByteArray`](./bytearray.md)).
 

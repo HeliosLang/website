@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Duration
+title: Duration
+sidebar_label: Duration
+sidebar_class_name: type_badge
 ---
-# `Duration`
+
+# <span className="type_badge">Duration</span>
 
 The difference of two [`Time`](./time.md) values is a `Duration` value. Only a `Duration` can be added to a [`Time`](./time.md) (two [`Time`](./time.md) values can't be added).
 

@@ -1,7 +1,10 @@
 ---
-sidebar_label: T ByteArray
+title: ByteArray
+sidebar_label: ByteArray
+sidebar_class_name: type_badge
 ---
-# `ByteArray`
+
+# <span className="type_badge">ByteArray</span>
 
 Represents an array of bytes (i.e. an array of uint8 numbers).
 

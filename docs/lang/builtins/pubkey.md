@@ -1,7 +1,10 @@
 ---
-sidebar_label: T PubKey
+title: PubKey
+sidebar_label: PubKey
+sidebar_class_name: type_badge
 ---
-# `PubKey`
+
+# <span className="type_badge">PubKey</span>
 
 [Opaque](https://en.wikipedia.org/wiki/Opaque_data_type) [`ByteArray`](./bytearray.md) that represents a Ed25519 public key.
 

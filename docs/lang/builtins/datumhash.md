@@ -1,7 +1,10 @@
 ---
-sidebar_label: T DatumHash
+title: DatumHash
+sidebar_label: DatumHash
+sidebar_class_name: type_badge
 ---
-# `DatumHash`
+
+# <span className="type_badge">DatumHash</span>
 
 [Opaque](https://en.wikipedia.org/wiki/Opaque_data_type) [`ByteArray`](./bytearray.md) that represents the hash of a datum.
 

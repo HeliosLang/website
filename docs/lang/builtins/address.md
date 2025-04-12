@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Address
+title: Address
+sidebar_label: Address
+sidebar_class_name: type_badge
 ---
-# `Address`
+
+# <span className="type_badge">Address</span>
 
 Represents a Cardano address.
 

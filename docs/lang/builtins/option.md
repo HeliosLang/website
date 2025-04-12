@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Option
+title: Option
+sidebar_label: Option
+sidebar_class_name: enum_badge
 ---
-# `Option`
+
+# <span className="enum_badge">Option</span>
 
 `Option[`*`SomeType`*`]` is an enum used to represent an optional value. Its type syntax takes one type parameter. An option has two variants:
   * `Some`

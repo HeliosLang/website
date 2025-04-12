@@ -1,7 +1,10 @@
 ---
-sidebar_label: T PubKeyHash
+title: PubKeyHash
+sidebar_label: PubKeyHash
+sidebar_class_name: type_badge
 ---
-# `PubKeyHash`
+
+# <span className="type_badge">PubKeyHash</span>
 
 [Opaque](https://en.wikipedia.org/wiki/Opaque_data_type) [`ByteArray`](./bytearray.md) that represents the hash of a [`PubKey`](./pubkey.md). 
 

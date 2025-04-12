@@ -1,7 +1,10 @@
 ---
-sidebar_label: T MintingPolicyHash
+title: MintingPolicyHash
+sidebar_label: MintingPolicyHash
+sidebar_class_name: type_badge
 ---
-# `MintingPolicyHash`
+
+# <span className="type_badge">MintingPolicyHash</span>
 
 [Opaque](https://en.wikipedia.org/wiki/Opaque_data_type) [`ByteArray`](./bytearray.md) that represents the hash of a minting policy script.
 

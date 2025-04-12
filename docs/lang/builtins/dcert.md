@@ -1,7 +1,10 @@
 ---
-sidebar_label: T DCert
+title: DCert
+sidebar_label: DCert
+sidebar_class_name: enum_badge
 ---
-# `DCert`
+
+# <span className="enum_badge">DCert</span>
 
 Represents an enum of staking related actions:
   * `Register`: register a `StakingCredential`

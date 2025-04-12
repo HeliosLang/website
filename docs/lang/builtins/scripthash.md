@@ -1,7 +1,10 @@
 ---
-sidebar_label: T ScriptHash
+title: ScriptHash
+sidebar_label: ScriptHash
+sidebar_class_name: type_badge
 ---
-# `ScriptHash`
+
+# <span className="type_badge">ScriptHash</span>
 
 [Opaque](https://en.wikipedia.org/wiki/Opaque_data_type) [`ByteArray`](./bytearray.md) that represents either a [`ValidatorHash`](./validatorhash.md), a [`MintingPolicyHash`](./mintingpolicyhash.md), or a [`StakingValidatorHash`](./stakingvalidatorhash.md).
 

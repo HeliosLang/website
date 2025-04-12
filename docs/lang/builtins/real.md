@@ -1,7 +1,10 @@
 ---
-sidebar_label: T Real
+title: Real
+sidebar_label: Real
+sidebar_class_name: type_badge
 ---
-# `Real`
+
+# <span className="type_badge">Real</span>
 
 This is a fixed point real number type with 6 decimal places. `Real` is designed for use in calculations involving relative fees.
 
