@@ -10,7 +10,13 @@ One low-level approach is to wrap a UPLC program with a Lambda term, and then ap
 
 ```js
 import { Program } from "@helios-lang/compiler"
-import { makeUplcCall, makeUplcConst, makeUplcInt, makeUplcLambda } from "@helios-lang/uplc"
+import {
+    makeUplcCall,
+    makeUplcConst,
+    makeUplcInt,
+    makeUplcLambda,
+    makeUplcProgramV2
+} from "@helios-lang/uplc"
 
 const src = `...`
 const program = new Program(src)
