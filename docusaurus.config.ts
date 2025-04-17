@@ -68,13 +68,13 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'languageSidebar',
           position: 'left',
-          label: 'Language',
+          label: 'Language guide',
         },
         {
           type: 'docSidebar',
           sidebarId: 'sdkSidebar',
           position: 'left',
-          label: 'SDK'
+          label: 'SDK reference'
         },
         {
           href: 'https://github.com/orgs/HeliosLang/repositories?q=visibility%3Apublic+archived%3Afalse+sort%3Aname-asc',
@@ -96,17 +96,17 @@ const config: Config = {
           title: 'Documentation',
           items: [
             {
-              label: 'Learn EUTxO development',
+              label: 'Learn',
               to: '/docs/learn/intro',
+            },
+            {
+              label: 'Language guide',
+              to: '/docs/lang/intro',
             },
             {
               label: 'SDK reference',
               to: '/docs/sdk/intro',
-            },
-            {
-              label: 'Language reference',
-              to: '/docs/lang/intro',
-            },
+            }
           ],
         },
         {

@@ -1,9 +1,11 @@
 ---
-sidebar_label: T StakingCredential
+title: StakingCredential
+sidebar_label: StakingCredential
+sidebar_class_name: enum_badge
 ---
-# `StakingCredential`
+# <span className="enum_badge">StakingCredential</span>
 
-Represents the staking part of an [`Address`](./address.md).
+Represents the staking part of an [`Address`](./address).
 
 `StakingCredential` is an enum with 2 variants:
   * `Hash`

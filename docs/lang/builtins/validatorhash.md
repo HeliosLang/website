@@ -1,7 +1,9 @@
 ---
-sidebar_label: T ValidatorHash
+title: ValidatorHash
+sidebar_label: ValidatorHash
+sidebar_class_name: type_badge
 ---
-# `ValidatorHash`
+# <span className="type_badge">ValidatorHash</span>
 
 [Opaque](https://en.wikipedia.org/wiki/Opaque_data_type) [`ByteArray`](./bytearray.md) that represents the hash of a validator script.
 

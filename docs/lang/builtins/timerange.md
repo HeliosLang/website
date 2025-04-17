@@ -1,7 +1,9 @@
 ---
-sidebar_label: T TimeRange
+title: TimeRange
+sidebar_label: TimeRange
+sidebar_class_name: type_badge
 ---
-# `TimeRange`
+# <span className="type_badge">TimeRange</span>
 
 This represents a range of time using a pair of [`Time`](./time.md) values, or open ends.
 

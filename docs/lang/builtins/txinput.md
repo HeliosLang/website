@@ -1,7 +1,9 @@
 ---
-sidebar_label: T TxInput
+title: TxInput
+sidebar_label: TxInput
+sidebar_class_name: type_badge
 ---
-# `TxInput`
+# <span className="type_badge">TxInput</span>
 
 Represents a **transaction input**.
 

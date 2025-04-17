@@ -1,7 +1,9 @@
 ---
-sidebar_label: T StakingPurpose
+title: StakingPurpose
+sidebar_label: StakingPurpose
+sidebar_class_name: enum_badge
 ---
-# `StakingPurpose`
+# <span className="enum_badge">StakingPurpose</span>
 
 A `staking` purpose script has a `StakingPurpose`, which is an enum with 2 variants:
   * `Rewarding`

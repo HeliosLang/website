@@ -1,7 +1,9 @@
 ---
-sidebar_label: T TxOutputId
+title: TxOutputId
+sidebar_label: TxOutputId
+sidebar_class_name: type_badge
 ---
-# `TxOutputId`
+# <span className="type_badge">TxOutputId</span>
 
 Represents the unique ID of a UTxO. It's composed of the **transaction ID** ([`TxId`](./txid.md)) of the transaction that created that UTxO, and of the index ([`Int`](./int.md)) of that UTxO in the outputs of that transaction.
 

@@ -1,7 +1,9 @@
 ---
-sidebar_label: C Any
+title: Any
+sidebar_label: Any
+sidebar_class_name: typeclass_badge
 ---
-# `Any`
+# <span className="typeclass_badge">Any</span>
 
 `Any` is a special [type class](https://en.wikipedia.org/wiki/Type_class) that can be used to constrain a [generic](../generics) type parameter. `Any` matches any data-type or any function-type. 
 

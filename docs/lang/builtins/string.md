@@ -1,12 +1,14 @@
 ---
-sidebar_label: T String
+title: String
+sidebar_label: String
+sidebar_class_name: type_badge
 ---
-# `String`
+# <span className="type_badge">String</span>
 
 Represents a piece of utf-8 text.
 
 ```helios
-string: String = "Woah!"; ...
+string: String = "Woah!"
 ```
 
 ## Associated functions

@@ -1,7 +1,9 @@
 ---
-sidebar_label: T TxId
+title: TxId
+sidebar_label: TxId
+sidebar_class_name: type_badge
 ---
-# `TxId`
+# <span className="type_badge">TxId</span>
 
 This is a type-safe wrapper around `ByteArray` representing the hash of a transaction.
 

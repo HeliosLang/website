@@ -1,7 +1,9 @@
 ---
-sidebar_label: T TxOutput
+title: TxOutput
+sidebar_label: TxOutput
+sidebar_class_name: type_badge
 ---
-# `TxOutput`
+# <span className="type_badge">TxOutput</span>
 
 Represents a **transaction output**.
 

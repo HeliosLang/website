@@ -1,7 +1,9 @@
 ---
-sidebar_label: T Time
+title: Time
+sidebar_label: Time
+sidebar_class_name: type_badge
 ---
-# `Time`
+# <span className="type_badge">Time</span>
 
 Represents POSIX time in milliseconds (time since 1970/01/01 00:00:00 UTC).
 

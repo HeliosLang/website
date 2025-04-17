@@ -1,7 +1,9 @@
 ---
-sidebar_label: T Tx
+title: Tx
+sidebar_label: Tx
+sidebar_class_name: type_badge
 ---
-# `Tx`
+# <span className="type_badge">Tx</span>
 
 Represents a balanced transaction.
 

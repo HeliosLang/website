@@ -46,15 +46,16 @@ nav.navbar {
   filter:  brightness(0) invert(1);
 }
 
-.class_badge, .constant_badge, .enum_badge, .function_badge, .interface_badge, .namespace_badge, .type_badge {
+.class_badge, .constant_badge, .enum_badge, .function_badge, .interface_badge, .namespace_badge, .type_badge, .typeclass_badge {
   display: flex;
   flex-direction: row;
   flex: 0;
   justify-content: flex-start;
   align-items: center;
+  font-size: 0.8em;
 }
 
-.class_badge::after, .constant_badge::after, .enum_badge::after, .function_badge::after, .interface_badge::after, .namespace_badge::after, .type_badge::after {
+.class_badge::after, .constant_badge::after, .enum_badge::after, .function_badge::after, .interface_badge::after, .namespace_badge::after, .type_badge::after, .typeclass_badge::after {
   background-color: var(--ifm-color-emphasis-200);
   font-size: 1em;
   max-height: 1.8em;
@@ -94,4 +95,8 @@ nav.navbar {
 
 .type_badge::after {
   content: "type";
+}
+
+.typeclass_badge::after {
+  content: "typeclass";
 }

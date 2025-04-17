@@ -1,7 +1,9 @@
 ---
-sidebar_label: C Valuable
+title: Valuable
+sidebar_label: Valuable
+sidebar_class_name: typeclass_badge
 ---
-# `Valuable`
+# <span className="typeclass_badge">Valuable</span>
 
 A [type class](https://en.wikipedia.org/wiki/Type_class) that matches a type with the following interface:
 

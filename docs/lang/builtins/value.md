@@ -1,7 +1,9 @@
 ---
-sidebar_label: T Value
+title: Value
+sidebar_label: Value
+sidebar_class_name: type_badge
 ---
-# `Value`
+# <span className="type_badge">Value</span>
 
 The `Value` type represents monetary value as a **token bundle** (internally represented as a `Map[`[`MintingPolicyHash`](./mintingpolicyhash.md)`]Map[`[`ByteArray`](./bytearray.md)`]`[`Int`](./int.md))
 

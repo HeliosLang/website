@@ -1,7 +1,9 @@
 ---
-sidebar_label: T StakingValidatorHash
+title: StakingValidatorHash
+sidebar_label: StakingValidatorHash
+sidebar_class_name: type_badge
 ---
-# `StakingValidatorHash`
+# <span className="type_badge">StakingValidatorHash</span>
 
 [Opaque](https://en.wikipedia.org/wiki/Opaque_data_type) [`ByteArray`](./bytearray.md) that represents the hash of a staking script.
 

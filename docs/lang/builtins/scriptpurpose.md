@@ -1,10 +1,10 @@
 ---
 title: ScriptPurpose
 sidebar_label: ScriptPurpose
-sidebar_class_name: type_badge
+sidebar_class_name: enum_badge
 ---
 
-# <span className="type_badge">ScriptPurpose</span>
+# <span className="enum_badge">ScriptPurpose</span>
 
 Each redemption in a transaction has a `ScriptPurpose` with the following 4 variants:
   * `Minting`

@@ -1,7 +1,9 @@
 ---
-sidebar_label: T StakingHash
+title: StakingHash
+sidebar_label: StakingHash
+sidebar_class_name: enum_badge
 ---
-# `StakingHash`
+# <span className="enum_badge">StakingHash</span>
 
 An enum with two variants: 
   * `StakeKey` (wraps [`PubKeyHash`](./pubkeyhash.md)) 
