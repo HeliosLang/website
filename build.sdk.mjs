@@ -243,19 +243,35 @@ function writeFunctionDoc(pkgName, child) {
 
 /**
  * @param {string} pkgName 
- * @param {DeclarationReflection} child 
+ * @param {DeclarationReflection} decl 
  */
-function writeInterfaceDoc(pkgName, child) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, child)
+function writeInterfaceDoc(pkgName, decl) {
+    const {name, path, site} = getCommonSymbolInfo(pkgName, decl)
 
-    const comment = child.comment ? stringifyComment(pkgName, child.comment) : ""
+    const comment = decl.comment ? stringifyComment(pkgName, decl.comment) : ""
     //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
 
     const content = [
         `# <span className="interface_badge">${name}</span>`,
         comment,
-      //  typeSnippet
+        //  typeSnippet
+        ""
     ]
+
+    // write a snippet each attribute
+    for (let attr of decl.children) {
+        const name = attr.name
+        const attrComment = attr.comment ? stringifyComment(pkgName, attr.comment) : ""
+        const attrType = stringifyType(pkgName, attr.type)
+
+        content.push([
+            `## \`${name}\``,
+            "",
+            ...(attrComment != "" ? [attrComment, ""] : []),
+            `<CodeBlock className="language-ts">${name}: ${attrType}</CodeBlock>`,
+            ""
+        ].join("\n"))
+    }
 
     writeFileSync(`.${path}.md`, [
         
