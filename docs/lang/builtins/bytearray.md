@@ -109,6 +109,14 @@ Turns a valid sequence of utf-8 bytes into a `String`. Throws an error if the `B
 byte_array.decode_utf8() -> String
 ```
 
+### `decode_utf8_safe`
+
+Like `ByteArray.decode_utf8`, but returns the hex representation if the `ByteArray` isn't valid UTF-8.
+
+```helios
+byte_arrya.decode_utf8_safe() -> String
+```
+
 ### `ends_with`
 
 Checks if a `ByteArray` ends with a given suffix.

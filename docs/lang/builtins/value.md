@@ -228,8 +228,10 @@ value.serialize() -> ByteArray
 Returns a formatted [`String`](./string.md) showing all the assets contained in a `Value`.
 
 ```helios
-value.show() -> String
+value.show(ada: ?Bool) -> String
 ```
+
+The optional `ada` argument defaults to `false`. If `ada` is `true`, the Lovelace quantity is formatted as a decimal Ada quantity instead. 
 
 ### `to_map`
 
