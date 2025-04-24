@@ -249,14 +249,37 @@ function writeInterfaceDoc(pkgName, decl) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, decl)
 
     const comment = decl.comment ? stringifyComment(pkgName, decl.comment) : ""
-    //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
+
+    // generate the typeSnippet
+    /**
+     * @type {string[]}
+     */
+    const typeSnippet = [
+        `<CodeBlock className="language-ts">export interface ${name} \\{`
+    ]
+
+    const typeSnippetIndent = "&nbsp;&nbsp;"
+
+    for (let attr of decl.children) {
+        const name = attr.name
+        const attrType = stringifyType(pkgName, attr.type, typeSnippetIndent)
+
+        typeSnippet.push(`${typeSnippetIndent}[${name}](#${name.toLowerCase()}): ${attrType}`)
+    }
+
+    typeSnippet.push('\\}</CodeBlock>')
 
     const content = [
         `# <span className="interface_badge">${name}</span>`,
-        comment,
-        //  typeSnippet
+        "",
+        ...(comment != "" ? [comment, ""] : []),
+        typeSnippet.join("\n"),
         ""
     ]
+
+    const instanceName = name[0].toLowerCase() + name.slice(1)
+
+    content.push("## Properties\n")
 
     // write a snippet each attribute
     for (let attr of decl.children) {
@@ -265,10 +288,10 @@ function writeInterfaceDoc(pkgName, decl) {
         const attrType = stringifyType(pkgName, attr.type)
 
         content.push([
-            `## \`${name}\``,
+            `### \`${name}\``,
             "",
             ...(attrComment != "" ? [attrComment, ""] : []),
-            `<CodeBlock className="language-ts">${name}: ${attrType}</CodeBlock>`,
+            `<CodeBlock className="language-ts">${instanceName}.${name} satisfies ${attrType}</CodeBlock>`,
             ""
         ].join("\n"))
     }
@@ -358,7 +381,8 @@ function writeTypeAliasDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
     const comment = child.comment ? stringifyComment(pkgName, child.comment) : ""
-    const typeSnippet = `<CodeBlock className="language-ts">export type ${name} = ${stringifyType(pkgName, child.type)}</CodeBlock>` 
+    const beforeType = (child.type?.type == "union" && child.type?.types?.length > 2) ? "\n&nbsp;&nbsp;| " : ""
+    const typeSnippet = `<CodeBlock className="language-ts">export type ${name} = ${beforeType}${stringifyType(pkgName, child.type)}</CodeBlock>` 
 
     const content = [
         `# <span className="type_badge">${name}</span>`,
@@ -384,34 +408,37 @@ function writeTypeAliasDoc(pkgName, child) {
 /**
  * @param {string} pkgName 
  * @param {ParameterReflection[]} params 
+ * @param {string} indent
  * @returns {string}
  */
-function stringifyFunctionParams(pkgName, params) {
+function stringifyFunctionParams(pkgName, params, indent = "") {
     if (params.length == 0) {
         return ""
     } else if (params.length == 1) {
-        return `${params[0].name}: ${stringifyType(pkgName, params[0].type)}`
+        return `${params[0].name}: ${stringifyType(pkgName, params[0].type, indent)}`
     } else {
-        return "\n&nbsp;&nbsp;" + params.map(p => `${p.name}: ${stringifyType(pkgName, p.type)}`).join(",\n&nbsp;&nbsp;") + "\n"
+        const innerIndent = `${indent}&nbsp;&nbsp;`
+        return "\n" + innerIndent + params.map(p => `${p.name}: ${stringifyType(pkgName, p.type, innerIndent)}`).join(",\n" + innerIndent) + "\n" + indent
     }
 }
 
 /**
  * @param {string} pkgName
  * @param {SomeType | undefined} t 
+ * @param {string} indent
  */
-function stringifyType(pkgName, t) {
+function stringifyType(pkgName, t, indent = "") {
     if (!t) {
         return "unknown"
     } else {
         switch(t.type) {
             case "array":
-                return `${stringifyType(pkgName, t.elementType)}[]`
+                return `${stringifyType(pkgName, t.elementType, indent)}[]`
             case "unknown":
             case "intrinsic":
                 return t.name
             case "reference":
-                const typeParams = t.typeArguments ? `&lt;${t.typeArguments.map(ta => stringifyType(pkgName, ta)).join(", ")}>` : ""
+                const typeParams = t.typeArguments ? `&lt;${t.typeArguments.map(ta => stringifyType(pkgName, ta, indent)).join(", ")}>` : ""
                 if (t.package == "typescript") {
                     switch(t.name) {
                         case "Uint8Array":
@@ -425,22 +452,36 @@ function stringifyType(pkgName, t) {
                 }
             case "reflection":
                 if (t.declaration.children) {
-                    return `\\{${t.declaration.children.map(c => {
+                    const innerIndent = t.declaration.children?.length > 1 ? indent + "&nbsp;&nbsp;" : indent
+                    const afterOpenBrace = t.declaration.children?.length > 1 ? "\n" + innerIndent : ""
+                    const separator = t.declaration.children?.length > 1 ? afterOpenBrace : ", "
+                    const beforeCloseBrace = t.declaration.children?.length > 1 ? "\n" + indent : ""
+
+                    return `\\{${afterOpenBrace}${t.declaration.children.map(c => {
                         const key = `${c.name}${c.flags.isOptional ? "?" : ""}`
-                        const value = c.type ? stringifyType(pkgName, c.type) : c.signatures && c.signatures.length > 0 ? stringifyFunctionSignature(pkgName, c.signatures[0]): "unknown"
+                        const value = c.type ? 
+                            stringifyType(pkgName, c.type, innerIndent) : 
+                            c.signatures && c.signatures.length > 0 ? 
+                                stringifyFunctionSignature(pkgName, c.signatures[0], innerIndent): 
+                                "unknown"
                         return `${key}: ${value}`
-                    }).join(", ")}\\}`
+                    }).join(separator)}${beforeCloseBrace}\\}`
                 } else if (t.declaration.signatures && t.declaration.signatures.length > 0) {
                     const signature = t.declaration.signatures[0]
 
-                    return stringifyFunctionSignature(pkgName, signature)
+                    return stringifyFunctionSignature(pkgName, signature, indent)
                 } else {
                     return "unknown"
                 }
             case "union":
-                return t.types.map(ut => stringifyType(pkgName, ut)).join(" | ")
+                if (t.types.length <= 2) {
+                    return t.types.map(ut => stringifyType(pkgName, ut, indent)).join(" | ")
+                } else {
+                    const innerIndent = indent + "&nbsp;&nbsp;"
+                    return t.types.map(ut => stringifyType(pkgName, ut, innerIndent)).join(`\n${innerIndent}| `)
+                }
             case "intersection":
-                return t.types.map(it => stringifyType(pkgName, it)).join(" & ")
+                return t.types.map(it => stringifyType(pkgName, it, indent)).join(" & ")
             case "literal":
                 if (typeof t.value == "string") {
                     return `"${t.value.replaceAll("{", "\\{")}"`
@@ -456,10 +497,11 @@ function stringifyType(pkgName, t) {
 /**
  * @param {string} pkgName 
  * @param {SignatureReflection} signature 
+ * @param {string} indent
  * @returns {string}
  */
-function stringifyFunctionSignature(pkgName, signature) {
-    return `(${stringifyFunctionParams(pkgName, signature.parameters ?? [])}) => ${stringifyType(pkgName, signature.type)}`
+function stringifyFunctionSignature(pkgName, signature, indent = "") {
+    return `(${stringifyFunctionParams(pkgName, signature.parameters ?? [], indent)}) => ${stringifyType(pkgName, signature.type, indent)}`
 }
 /**
  * @param {string} pkgName
