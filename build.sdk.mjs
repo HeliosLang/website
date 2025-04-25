@@ -262,9 +262,8 @@ function writeInterfaceDoc(pkgName, decl) {
 
     for (let attr of decl.children) {
         const name = attr.name
-        const attrType = stringifyType(pkgName, attr.type, typeSnippetIndent)
 
-        typeSnippet.push(`${typeSnippetIndent}[${name}](#${name.toLowerCase()}): ${attrType}`)
+        typeSnippet.push(`${typeSnippetIndent}[${name}](#${name.toLowerCase()})${stringifyMaybeFunctionProperty(pkgName, attr, typeSnippetIndent)}`)
     }
 
     typeSnippet.push('\\}</CodeBlock>')
@@ -457,21 +456,12 @@ function stringifyType(pkgName, t, indent = "") {
                     const separator = t.declaration.children?.length > 1 ? afterOpenBrace : ", "
                     const beforeCloseBrace = t.declaration.children?.length > 1 ? "\n" + indent : ""
 
-                    return `\\{${afterOpenBrace}${t.declaration.children.map(c => {
-                        const key = `${c.name}${c.flags.isOptional ? "?" : ""}`
-                        const value = c.type ? 
-                            stringifyType(pkgName, c.type, innerIndent) : 
-                            c.signatures && c.signatures.length > 0 ? 
-                                stringifyFunctionSignature(pkgName, c.signatures[0], innerIndent): 
-                                "unknown"
-                        return `${key}: ${value}`
+                    return `\\{${afterOpenBrace}${t.declaration.children.map(ct => {
+                        const key = `${ct.name}${ct.flags.isOptional ? "?" : ""}`
+                        return `${key}${stringifyMaybeFunctionProperty(pkgName, ct, innerIndent)}`
                     }).join(separator)}${beforeCloseBrace}\\}`
-                } else if (t.declaration.signatures && t.declaration.signatures.length > 0) {
-                    const signature = t.declaration.signatures[0]
-
-                    return stringifyFunctionSignature(pkgName, signature, indent)
                 } else {
-                    return "unknown"
+                    return stringifyFunctionSignatures(pkgName, t.declaration.signatures, indent)
                 }
             case "union":
                 if (t.types.length <= 2) {
@@ -488,6 +478,8 @@ function stringifyType(pkgName, t, indent = "") {
                 } else {
                     return t.value
                 }
+            case "tuple":
+                return `[${(t.elements ?? []).map(et => stringifyType(pkgName, et, indent)).join(", ")}]`
             default: 
                 return "unknown"
         }
@@ -496,12 +488,47 @@ function stringifyType(pkgName, t, indent = "") {
 
 /**
  * @param {string} pkgName 
- * @param {SignatureReflection} signature 
- * @param {string} indent
+ * @param {DeclarationReflection} decl 
+ * @param {string} indent 
  * @returns {string}
  */
-function stringifyFunctionSignature(pkgName, signature, indent = "") {
-    return `(${stringifyFunctionParams(pkgName, signature.parameters ?? [], indent)}) => ${stringifyType(pkgName, signature.type, indent)}`
+function stringifyMaybeFunctionProperty(pkgName, decl, indent = "") {
+    const funcSignatures = decl.signatures && decl.signatures.length > 0 ? decl.signatures : (decl.type && decl.type.type == "reflection" && decl.type.declaration.signatures) ? decl.type.declaration.signatures : undefined
+    const isFunction = (funcSignatures && funcSignatures.length > 0)
+    const value =  isFunction ? 
+        stringifyFunctionSignatures(pkgName, funcSignatures, indent, ": "): 
+        decl.type ? 
+            stringifyType(pkgName, decl.type, indent) : 
+            "unknown"
+    return `${isFunction ? "" : ": "}${value}`
+}
+
+/**
+ * @param {string} pkgName 
+ * @param {undefined | SignatureReflection[]} signatures 
+ * @param {string} [indent]
+ * @param {string} [arrow]
+ * @returns {string}
+ */
+function stringifyFunctionSignatures(pkgName, signatures, indent = "", arrow = " => ") {
+    if (signatures && signatures.length > 0) {
+        const signature = signatures[0]
+
+        return stringifyFunctionSignature(pkgName, signature, indent, arrow)
+    } else {
+        return "unknown"
+    }
+}
+
+/**
+ * @param {string} pkgName 
+ * @param {SignatureReflection} signature 
+ * @param {string} [indent]
+ * @param {string} [arrow]
+ * @returns {string}
+ */
+function stringifyFunctionSignature(pkgName, signature, indent = "", arrow = " => ") {
+    return `(${stringifyFunctionParams(pkgName, signature.parameters ?? [], indent)})${arrow}${stringifyType(pkgName, signature.type, indent)}`
 }
 /**
  * @param {string} pkgName
