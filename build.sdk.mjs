@@ -174,7 +174,7 @@ function getCommonSymbolInfo(pkgName, child) {
 function writeConstantDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    const comment = child.comment ? stringifyComment(pkgName, child.comment) : ""
+    const comment = stringifyComment(pkgName, child.comment)
     const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
 
     const content = [
@@ -218,12 +218,45 @@ function writeFunctionDoc(pkgName, child) {
             content.push(`\n## Overload ${i+1}`)
         }
 
-        const comment = overload.comment ? stringifyComment(pkgName, overload.comment) : ""
+        const comment = stringifyComment(pkgName, overload.comment)
         content.push(comment)
 
         const returnType = stringifyType(pkgName, overload.type)
-        const typeSnippet = `<CodeBlock className="language-ts">export function ${name}(${stringifyFunctionParams(pkgName, overload.parameters ?? [])}): ${returnType}</CodeBlock>`
+        const parameters = overload.parameters ?? []
+        const typeSnippet = `<CodeBlock className="language-ts">export function ${name}(${stringifyFunctionParams(pkgName, parameters)}): ${returnType}</CodeBlock>`
         content.push(typeSnippet)
+
+
+        if (parameters.length > 0) {
+            content.push("\n### Arguments\n")
+
+            const tableParts = ["<table className=\"fn-arguments\"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>"]
+
+            for (let p of parameters) {
+                const pName = p.name
+                const pType = stringifyType(pkgName, p.type)
+                //const pTypeLines = pType.split("\n")
+                const pDescription = stringifyComment(pkgName, p.comment)
+                //const pDescriptionLines = pDescription.split("\n")
+
+                tableParts.push(`<tr><td>${pName}</td><td>${pType}</td><td>${pDescription}</td></tr>`)
+
+                //for (let i = 1; i < Math.max(pTypeLines.length, pDescriptionLines.length); i++) {
+                //    content.push(`| | ${i < pTypeLines.length ? `<CodeBlock>${pTypeLines[i]}</CodeBlock>` : ""} | ${i < pDescriptionLines.length ? pDescriptionLines[i] : ""} |`)
+                //}
+            }
+
+            tableParts.push("</tbody></table>")
+
+            content.push(tableParts.join(""))
+        }
+        
+        content.push("\n### Return value\n")
+        const returnValueComment = stringifyCommentDisplayParts(pkgName, overload.comment?.blockTags?.find(bt => bt.tag == "@returns")?.content)
+        if (returnValueComment != "") {
+            content.push(returnValueComment + "\n")
+        }
+        content.push(`<CodeBlock className="language-ts">${returnType}</CodeBlock>\n`)
     }
 
     writeFileSync(`.${path}.md`, [
@@ -248,7 +281,7 @@ function writeFunctionDoc(pkgName, child) {
 function writeInterfaceDoc(pkgName, decl) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, decl)
 
-    const comment = decl.comment ? stringifyComment(pkgName, decl.comment) : ""
+    const comment = stringifyComment(pkgName, decl.comment)
 
     // generate the typeSnippet
     /**
@@ -283,7 +316,7 @@ function writeInterfaceDoc(pkgName, decl) {
     // write a snippet each attribute
     for (let attr of decl.children) {
         const name = attr.name
-        const attrComment = attr.comment ? stringifyComment(pkgName, attr.comment) : ""
+        const attrComment = stringifyComment(pkgName, attr.comment)
         const attrType = stringifyType(pkgName, attr.type)
 
         content.push([
@@ -317,7 +350,7 @@ function writeInterfaceDoc(pkgName, decl) {
 function writeNamespaceDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    const comment = child.comment ? stringifyComment(pkgName, child.comment) : ""
+    const comment = stringifyComment(pkgName, child.comment)
     //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
 
     const content = [
@@ -348,7 +381,7 @@ function writeNamespaceDoc(pkgName, child) {
 function writeClassDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    const comment = child.comment ? stringifyComment(pkgName, child.comment) : ""
+    const comment = stringifyComment(pkgName, child.comment)
     //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
 
     const content = [
@@ -379,7 +412,7 @@ function writeClassDoc(pkgName, child) {
 function writeTypeAliasDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    const comment = child.comment ? stringifyComment(pkgName, child.comment) : ""
+    const comment = stringifyComment(pkgName, child.comment)
     const beforeType = (child.type?.type == "union" && child.type?.types?.length > 2) ? "\n&nbsp;&nbsp;| " : ""
     const typeSnippet = `<CodeBlock className="language-ts">export type ${name} = ${beforeType}${stringifyType(pkgName, child.type)}</CodeBlock>` 
 
@@ -425,6 +458,7 @@ function stringifyFunctionParams(pkgName, params, indent = "") {
  * @param {string} pkgName
  * @param {SomeType | undefined} t 
  * @param {string} indent
+ * @returns {string}
  */
 function stringifyType(pkgName, t, indent = "") {
     if (!t) {
@@ -494,7 +528,7 @@ function stringifyType(pkgName, t, indent = "") {
  */
 function stringifyMaybeFunctionProperty(pkgName, decl, indent = "") {
     const funcSignatures = decl.signatures && decl.signatures.length > 0 ? decl.signatures : (decl.type && decl.type.type == "reflection" && decl.type.declaration.signatures) ? decl.type.declaration.signatures : undefined
-    const isFunction = (funcSignatures && funcSignatures.length > 0)
+    const isFunction = !decl.flags.isOptional && (funcSignatures && funcSignatures.length > 0)
     const value =  isFunction ? 
         stringifyFunctionSignatures(pkgName, funcSignatures, indent, ": "): 
         decl.type ? 
@@ -537,10 +571,7 @@ function stringifyFunctionSignature(pkgName, signature, indent = "", arrow = " =
 function writeGenericSymbolDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    let content = ""
-    if (child.comment) {
-        content = stringifyComment(pkgName, child.comment)
-    }
+    let content = stringifyComment(pkgName, child.comment)
 
     writeFileSync(`.${path}.md`, [
         "---",
@@ -585,11 +616,11 @@ function getHeliosPackageVersion(pkgName) {
 
 /**
  * @param {string} pkgName
- * @param {CommentDisplayPart[]} parts 
+ * @param {undefined | CommentDisplayPart[]} parts 
  * @returns {string}
  */
 function stringifyCommentDisplayParts(pkgName, parts) {
-    let s = parts.map(p => {
+    let s = (parts ?? []).map(p => {
         if (p.kind == "text") {
             // escape `<` to avoid problems with mdx format
             return p.text.replaceAll("<", "&lt;")
@@ -602,16 +633,20 @@ function stringifyCommentDisplayParts(pkgName, parts) {
         }
     }).join("")
 
-    return s
+    return s.trim()
 }
 
 /**
  * @param {string} pkgName
- * @param {Comment} comment 
+ * @param {undefined | Comment} comment 
  * @returns {string}
  */
 function stringifyComment(pkgName, comment) {
-    return stringifyCommentDisplayParts(pkgName, comment.summary)
+    if (!comment) {
+        return ""
+    } else {
+        return stringifyCommentDisplayParts(pkgName, comment.summary)
+    }
 }
 
 main()

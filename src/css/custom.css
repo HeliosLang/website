@@ -100,3 +100,16 @@ nav.navbar {
 .typeclass_badge::after {
   content: "typeclass";
 }
+
+table.fn-arguments {
+  display: table;
+  width: 100%;
+}
+
+table.fn-arguments td:first-child { 
+  font: var(--ifm-code-font-size)/var(--ifm-pre-line-height) var(--ifm-font-family-monospace);
+}
+
+table.fn-arguments td:nth-child(2) {
+  font: var(--ifm-code-font-size)/var(--ifm-pre-line-height) var(--ifm-font-family-monospace);
+}
