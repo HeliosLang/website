@@ -19,9 +19,11 @@ const PLUMBING_PACKAGES = [
 
 const ALL_PACKAGES = MAIN_PACKAGES.concat(PLUMBING_PACKAGES)
 
+const TAB = "&nbsp;&nbsp;"
+
 // TODO: turn this into a docusaurus plugin so it can operate during hot-reloads
 /**
- * @import { Comment, CommentDisplayPart, DeclarationReflection, ParameterReflection, ProjectReflection, SignatureReflection, SomeType, SourceReference } from "typedoc"
+ * @import { Comment, CommentDisplayPart, DeclarationReflection, ParameterReflection, ProjectReflection, SignatureReflection, SomeType, SourceReference, TypeParameterReflection } from "typedoc"
  */
 
 async function main() {
@@ -212,53 +214,75 @@ function writeFunctionDoc(pkgName, child) {
     ]
 
     const overloads = child.signatures ?? []
+    const hasOverloads = overloads.length > 1
+    const sectionPrefix = `##${hasOverloads ? "#" : ""}`
 
     for (let i = 0; i < overloads.length; i++) {
         const overload = overloads[i]
 
-        if (overloads.length > 1) {
+        if (hasOverloads) {
             content.push(`\n## Overload ${i+1}`)
         }
 
         const returnType = stringifyType(pkgName, overload.type)
         const parameters = overload.parameters ?? []
-        const typeSnippet = `\n<CodeBlock className="language-ts">export function ${name}(${stringifyFunctionParams(pkgName, parameters)}): ${returnType}</CodeBlock>`
+        const typeParams = overload.typeParameters ?? []
+        const typeSnippet = `\n<CodeBlock className="language-ts">export function ${name}${stringifyTypeParams(pkgName, overload.typeParameters)}(${stringifyFunctionParams(pkgName, parameters)}): ${returnType}</CodeBlock>`
         content.push(typeSnippet)
 
         const comment = stringifyComment(pkgName, overload.comment)
         content.push("\n" + comment)
 
+        if (typeParams.length > 0) {
+            content.push(`\n${sectionPrefix} Type parameters`)
+
+            for (let p of typeParams) {
+                content.push(`\n${sectionPrefix}# \`${p.name}\``)
+
+                const typeSnippet = stringifyTypeParam(pkgName, p, true)
+                content.push(`\n<CodeBlock className="language-ts">${typeSnippet}</CodeBlock>`)
+
+                const comment = stringifyComment(pkgName, p.comment)
+                if (comment != "")
+                content.push("\n" + comment)
+            }
+        }
 
         if (parameters.length > 0) {
-            content.push("\n### Arguments\n")
+            content.push(`\n${sectionPrefix} Arguments`)
 
-            const tableParts = ["<table className=\"fn-arguments\"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>"]
+            //const tableParts = ["<table className=\"fn-arguments\"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>"]
 
-            for (let p of parameters) {
+            for (let i = 0; i < parameters.length; i++) {
+                const p = parameters[i]
                 const pName = p.name
                 const pType = stringifyType(pkgName, p.type)
+
+                content.push(`\n#${sectionPrefix} ${i+1}. \`${pName}\``)
                 //const pTypeLines = pType.split("\n")
+                content.push(`\n<CodeBlock className="language-ts">${pName}: ${pType}</CodeBlock>`)
                 const pDescription = stringifyComment(pkgName, p.comment)
+                content.push(pDescription)
                 //const pDescriptionLines = pDescription.split("\n")
 
-                tableParts.push(`<tr><td>${pName}</td><td>${pType}</td><td>${pDescription}</td></tr>`)
+                //tableParts.push(`<tr><td>${pName}</td><td>${pType}</td><td>${pDescription}</td></tr>`)
 
                 //for (let i = 1; i < Math.max(pTypeLines.length, pDescriptionLines.length); i++) {
                 //    content.push(`| | ${i < pTypeLines.length ? `<CodeBlock>${pTypeLines[i]}</CodeBlock>` : ""} | ${i < pDescriptionLines.length ? pDescriptionLines[i] : ""} |`)
                 //}
             }
 
-            tableParts.push("</tbody></table>")
+            //tableParts.push("</tbody></table>")
 
-            content.push(tableParts.join(""))
+            //content.push(tableParts.join(""))
         }
         
-        content.push("\n### Return value\n")
+        content.push(`\n${sectionPrefix} Returns\n`)
+        content.push(`<CodeBlock className="language-ts">${returnType}</CodeBlock>\n`)
         const returnValueComment = stringifyCommentDisplayParts(pkgName, overload.comment?.blockTags?.find(bt => bt.tag == "@returns")?.content)
         if (returnValueComment != "") {
             content.push(returnValueComment + "\n")
         }
-        content.push(`<CodeBlock className="language-ts">${returnType}</CodeBlock>\n`)
     }
 
     writeFileSync(`.${path}.md`, [
@@ -288,10 +312,10 @@ function writeInterfaceDoc(pkgName, decl) {
      * @type {string[]}
      */
     const typeSnippet = [
-        `<CodeBlock className="language-ts">export interface ${name} \\{`
+        `<CodeBlock className="language-ts">export interface ${name}${stringifyTypeParams(pkgName, decl.typeParameters)} \\{`
     ]
 
-    const typeSnippetIndent = "&nbsp;&nbsp;"
+    const typeSnippetIndent = TAB
 
     for (let attr of decl.children) {
         const name = attr.name
@@ -407,15 +431,14 @@ function writeClassDoc(pkgName, child) {
 
 /**
  * @param {string} pkgName 
- * @param {DeclarationReflection} child 
+ * @param {DeclarationReflection} decl 
  */
-function writeTypeAliasDoc(pkgName, child) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, child)
+function writeTypeAliasDoc(pkgName, decl) {
+    const {name, path, site} = getCommonSymbolInfo(pkgName, decl)
 
-    
-    const beforeType = (child.type?.type == "union" && child.type?.types?.length > 2) ? "\n&nbsp;&nbsp;| " : ""
-    const typeSnippet = `<CodeBlock className="language-ts">export type ${name} = ${beforeType}${stringifyType(pkgName, child.type)}</CodeBlock>` 
-    const comment = stringifyComment(pkgName, child.comment)
+    const beforeType = (decl.type?.type == "union" && decl.type?.types?.length > 2) ? `\n${TAB}| ` : ""
+    const typeSnippet = `<CodeBlock className="language-ts">export type ${name}${stringifyTypeParams(pkgName, decl.typeParameters)} = ${beforeType}${stringifyType(pkgName, decl.type)}</CodeBlock>` 
+    const comment = stringifyComment(pkgName, decl.comment)
 
     const content = [
         `# <span className="type_badge">${name}</span>`,
@@ -453,7 +476,7 @@ function stringifyFunctionParams(pkgName, params, indent = "") {
     } else if (params.length == 1) {
         return `${params[0].name}: ${stringifyType(pkgName, params[0].type, indent)}`
     } else {
-        const innerIndent = `${indent}&nbsp;&nbsp;`
+        const innerIndent = `${indent}${TAB}`
         return "\n" + innerIndent + params.map(p => `${p.name}: ${stringifyType(pkgName, p.type, innerIndent)}`).join(",\n" + innerIndent) + "\n" + indent
     }
 }
@@ -488,6 +511,13 @@ function stringifyType(pkgName, t, indent = "") {
             case "unknown":
             case "intrinsic":
                 return t.name
+            case "predicate":
+                return `${t.asserts ? "asserts " : ""}${t.name} is ${stringifyType(pkgName, t.targetType, indent)}`
+            case "rest":
+                return `...${stringifyType(pkgName, t.elementType, indent)}`
+            case "conditional":
+                const innerIndent = indent + TAB
+                return `${stringifyType(pkgName, t.checkType, indent)} extends ${stringifyType(pkgName, t.extendsType, indent)} \n${innerIndent}? ${stringifyType(pkgName, t.trueType, innerIndent)} \n${innerIndent}: ${stringifyType(pkgName, t.falseType, innerIndent)}`
             case "reference":
                 const typeParams = t.typeArguments ? `&lt;${t.typeArguments.map(ta => stringifyType(pkgName, ta, indent)).join(", ")}>` : ""
                 if (t.package == "typescript") {
@@ -497,13 +527,15 @@ function stringifyType(pkgName, t, indent = "") {
                         default:
                             return t.name + typeParams
                     }
-                } else {
+                } else if (!t.refersToTypeParameter) {
                     const path = getSymbolDocPath(t.package ?? pkgName, t.name)
                     return `[${t.name}](${path})` + typeParams
+                } else {
+                    return t.name + typeParams
                 }
             case "reflection":
                 if (t.declaration.children) {
-                    const innerIndent = t.declaration.children?.length > 1 ? indent + "&nbsp;&nbsp;" : indent
+                    const innerIndent = t.declaration.children?.length > 1 ? indent + TAB : indent
                     const afterOpenBrace = t.declaration.children?.length > 1 ? "\n" + innerIndent : ""
                     const separator = t.declaration.children?.length > 1 ? afterOpenBrace : ", "
                     const beforeCloseBrace = t.declaration.children?.length > 1 ? "\n" + indent : ""
@@ -519,7 +551,7 @@ function stringifyType(pkgName, t, indent = "") {
                 if (t.types.length <= 2) {
                     return t.types.map(ut => stringifyType(pkgName, ut, indent)).join(" | ")
                 } else {
-                    const innerIndent = indent + "&nbsp;&nbsp;"
+                    const innerIndent = indent + TAB
                     return t.types.map(ut => stringifyType(pkgName, ut, innerIndent)).join(`\n${innerIndent}| `)
                 }
             case "intersection":
@@ -531,7 +563,9 @@ function stringifyType(pkgName, t, indent = "") {
                     return t.value
                 }
             case "tuple":
-                return `[${(t.elements ?? []).map(et => stringifyType(pkgName, et, indent)).join(", ")}]`
+                const parts = (t.elements ?? []).map(et => stringifyType(pkgName, et, indent))
+
+                return joinGroup("[", parts, "]", indent)
             default: 
                 return "unknown"
         }
@@ -580,8 +614,55 @@ function stringifyFunctionSignatures(pkgName, signatures, indent = "", arrow = "
  * @returns {string}
  */
 function stringifyFunctionSignature(pkgName, signature, indent = "", arrow = " => ") {
-    return `(${stringifyFunctionParams(pkgName, signature.parameters ?? [], indent)})${arrow}${stringifyType(pkgName, signature.type, indent)}`
+    return `${stringifyTypeParams(pkgName, signature.typeParameters, indent)}(${stringifyFunctionParams(pkgName, signature.parameters ?? [], indent)})${arrow}${stringifyType(pkgName, signature.type, indent)}`
 }
+
+/**
+ * @param {string} pkgName 
+ * @param {TypeParameterReflection[] | undefined} typeParams 
+ * @param {string} [indent]
+ * @returns {string}
+ */
+function stringifyTypeParams(pkgName, typeParams, indent = "") {
+    if (typeParams && typeParams.length > 0) {
+        const parts = typeParams.map(tp => stringifyTypeParam(pkgName, tp, false, indent))
+
+        return joinGroup("&lt;", parts, "&gt;", indent)
+    } else {
+        return ""
+    }
+}
+
+/**
+ * @param {string} open 
+ * @param {string[]} parts 
+ * @param {string} close
+ * @param {string} [indent]
+ * @param {string} [separator]
+ * @returns {string}
+ */
+function joinGroup(open, parts, close, indent = "", separator = ",") {
+    if (parts.some(p => p.includes("\n"))) {
+        return `${open}\n${indent + TAB}${parts.map(p => p.split("\n").join("\n" + TAB)).join(separator + "\n" + indent + TAB)}\n${indent}${close}`
+    } else {
+        return `${open}${parts.join(separator + " ")}${close}`
+    }
+}
+
+/**
+ * @param {string} pkgName 
+ * @param {TypeParameterReflection} typeParam 
+ * @param {boolean} [extendsAny]
+ * @param {string} indent
+ * @returns {string} 
+ */
+function stringifyTypeParam(pkgName, typeParam, extendsAny = false, indent = "") {
+    const ext = typeParam.type ? ` extends ${stringifyType(pkgName, typeParam.type, indent)}` : extendsAny ? " extends any" : ""
+    const def = typeParam.default ? `${(ext == "" ? "=" : " = ")}${stringifyType(pkgName, typeParam.default, indent)}` : ""
+
+    return `${typeParam.name}${ext}${def}`
+}
+
 /**
  * @param {string} pkgName
  * @param {DeclarationReflection} child 
