@@ -179,8 +179,10 @@ function writeConstantDoc(pkgName, child) {
 
     const content = [
         `# <span className="constant_badge">${name}</span>`,
-        comment,
-        typeSnippet
+        "",
+        typeSnippet,
+        "",
+        comment
     ]
 
     writeFileSync(`.${path}.md`, [
@@ -218,13 +220,13 @@ function writeFunctionDoc(pkgName, child) {
             content.push(`\n## Overload ${i+1}`)
         }
 
-        const comment = stringifyComment(pkgName, overload.comment)
-        content.push(comment)
-
         const returnType = stringifyType(pkgName, overload.type)
         const parameters = overload.parameters ?? []
-        const typeSnippet = `<CodeBlock className="language-ts">export function ${name}(${stringifyFunctionParams(pkgName, parameters)}): ${returnType}</CodeBlock>`
+        const typeSnippet = `\n<CodeBlock className="language-ts">export function ${name}(${stringifyFunctionParams(pkgName, parameters)}): ${returnType}</CodeBlock>`
         content.push(typeSnippet)
+
+        const comment = stringifyComment(pkgName, overload.comment)
+        content.push("\n" + comment)
 
 
         if (parameters.length > 0) {
@@ -281,8 +283,6 @@ function writeFunctionDoc(pkgName, child) {
 function writeInterfaceDoc(pkgName, decl) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, decl)
 
-    const comment = stringifyComment(pkgName, decl.comment)
-
     // generate the typeSnippet
     /**
      * @type {string[]}
@@ -296,34 +296,34 @@ function writeInterfaceDoc(pkgName, decl) {
     for (let attr of decl.children) {
         const name = attr.name
 
-        typeSnippet.push(`${typeSnippetIndent}[${name}](#${name.toLowerCase()})${stringifyMaybeFunctionProperty(pkgName, attr, typeSnippetIndent)}`)
+        typeSnippet.push(`${typeSnippetIndent}[${name}](#${name.toLowerCase()})${stringifyMaybeFunctionTypeProperty(pkgName, attr, typeSnippetIndent)}`)
     }
 
     typeSnippet.push('\\}</CodeBlock>')
 
+    const comment = stringifyComment(pkgName, decl.comment)
+
     const content = [
         `# <span className="interface_badge">${name}</span>`,
         "",
-        ...(comment != "" ? [comment, ""] : []),
         typeSnippet.join("\n"),
+        ...(comment != "" ? [comment, ""] : []),
         ""
     ]
-
-    const instanceName = name[0].toLowerCase() + name.slice(1)
 
     content.push("## Properties\n")
 
     // write a snippet each attribute
     for (let attr of decl.children) {
         const name = attr.name
+        const attrType = stringifyMaybeFunctionInterfaceProperty(pkgName, attr.type)
         const attrComment = stringifyComment(pkgName, attr.comment)
-        const attrType = stringifyType(pkgName, attr.type)
 
         content.push([
             `### \`${name}\``,
             "",
+            `<CodeBlock className="language-ts">${name}${attrType}</CodeBlock>`,
             ...(attrComment != "" ? [attrComment, ""] : []),
-            `<CodeBlock className="language-ts">${instanceName}.${name} satisfies ${attrType}</CodeBlock>`,
             ""
         ].join("\n"))
     }
@@ -350,13 +350,13 @@ function writeInterfaceDoc(pkgName, decl) {
 function writeNamespaceDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    const comment = stringifyComment(pkgName, child.comment)
     //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
+    const comment = stringifyComment(pkgName, child.comment)
 
     const content = [
         `# <span className="namespace_badge">${name}</span>`,
+        //  typeSnippet,
         comment,
-      //  typeSnippet
     ]
 
     writeFileSync(`.${path}.md`, [
@@ -381,13 +381,13 @@ function writeNamespaceDoc(pkgName, child) {
 function writeClassDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    const comment = stringifyComment(pkgName, child.comment)
     //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
+    const comment = stringifyComment(pkgName, child.comment)
 
     const content = [
         `# <span className="class_badge">${name}</span>`,
+        //  typeSnippet,
         comment,
-      //  typeSnippet
     ]
 
     writeFileSync(`.${path}.md`, [
@@ -412,14 +412,18 @@ function writeClassDoc(pkgName, child) {
 function writeTypeAliasDoc(pkgName, child) {
     const {name, path, site} = getCommonSymbolInfo(pkgName, child)
 
-    const comment = stringifyComment(pkgName, child.comment)
+    
     const beforeType = (child.type?.type == "union" && child.type?.types?.length > 2) ? "\n&nbsp;&nbsp;| " : ""
     const typeSnippet = `<CodeBlock className="language-ts">export type ${name} = ${beforeType}${stringifyType(pkgName, child.type)}</CodeBlock>` 
+    const comment = stringifyComment(pkgName, child.comment)
 
     const content = [
         `# <span className="type_badge">${name}</span>`,
+        "",
+        typeSnippet,
+        "",
         comment,
-        typeSnippet
+        ""
     ]
 
     writeFileSync(`.${path}.md`, [
@@ -451,6 +455,20 @@ function stringifyFunctionParams(pkgName, params, indent = "") {
     } else {
         const innerIndent = `${indent}&nbsp;&nbsp;`
         return "\n" + innerIndent + params.map(p => `${p.name}: ${stringifyType(pkgName, p.type, innerIndent)}`).join(",\n" + innerIndent) + "\n" + indent
+    }
+}
+
+/**
+ * @param {string} pkgName 
+ * @param {SomeType | undefined} t 
+ * @param {string} indent 
+ * @returns {string}
+ */
+function stringifyMaybeFunctionInterfaceProperty(pkgName, t, indent = "") {
+    if (t && t.type == "reflection") {
+        return stringifyMaybeFunctionTypeProperty(pkgName, t.declaration, indent)
+    } else {
+        return `: ${stringifyType(pkgName, t, indent)}`
     }
 }
 
@@ -492,7 +510,7 @@ function stringifyType(pkgName, t, indent = "") {
 
                     return `\\{${afterOpenBrace}${t.declaration.children.map(ct => {
                         const key = `${ct.name}${ct.flags.isOptional ? "?" : ""}`
-                        return `${key}${stringifyMaybeFunctionProperty(pkgName, ct, innerIndent)}`
+                        return `${key}${stringifyMaybeFunctionTypeProperty(pkgName, ct, innerIndent)}`
                     }).join(separator)}${beforeCloseBrace}\\}`
                 } else {
                     return stringifyFunctionSignatures(pkgName, t.declaration.signatures, indent)
@@ -526,7 +544,7 @@ function stringifyType(pkgName, t, indent = "") {
  * @param {string} indent 
  * @returns {string}
  */
-function stringifyMaybeFunctionProperty(pkgName, decl, indent = "") {
+function stringifyMaybeFunctionTypeProperty(pkgName, decl, indent = "") {
     const funcSignatures = decl.signatures && decl.signatures.length > 0 ? decl.signatures : (decl.type && decl.type.type == "reflection" && decl.type.declaration.signatures) ? decl.type.declaration.signatures : undefined
     const isFunction = !decl.flags.isOptional && (funcSignatures && funcSignatures.length > 0)
     const value =  isFunction ? 
