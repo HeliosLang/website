@@ -260,7 +260,7 @@ function writeFunctionDoc(pkgName, child) {
 
                 content.push(`\n#${sectionPrefix} ${i+1}. \`${pName}\``)
                 //const pTypeLines = pType.split("\n")
-                content.push(`\n<CodeBlock className="language-ts">${pName}: ${pType}</CodeBlock>`)
+                content.push(`\n<CodeBlock className="language-ts">${pName}${p.flags.isOptional ? "?" : ""}: ${pType}</CodeBlock>`)
                 const pDescription = stringifyComment(pkgName, p.comment)
                 content.push(pDescription)
                 //const pDescriptionLines = pDescription.split("\n")
@@ -474,10 +474,10 @@ function stringifyFunctionParams(pkgName, params, indent = "") {
     if (params.length == 0) {
         return ""
     } else if (params.length == 1) {
-        return `${params[0].name}: ${stringifyType(pkgName, params[0].type, indent)}`
+        return `${params[0].name}${params[0].flags?.isOptional ? "?" : ""}: ${stringifyType(pkgName, params[0].type, indent)}`
     } else {
         const innerIndent = `${indent}${TAB}`
-        return "\n" + innerIndent + params.map(p => `${p.name}: ${stringifyType(pkgName, p.type, innerIndent)}`).join(",\n" + innerIndent) + "\n" + indent
+        return "\n" + innerIndent + params.map(p => `${p.name}${p.flags?.isOptional ? "?" : ""}: ${stringifyType(pkgName, p.type, innerIndent)}`).join(",\n" + innerIndent) + "\n" + indent
     }
 }
 
