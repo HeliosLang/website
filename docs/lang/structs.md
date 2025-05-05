@@ -116,9 +116,9 @@ If any field is tagged, the struct is encoded as a data map with utf-8 encoded k
 
 ### Field tagging
 
-This internal data-list format isn't convenient for datums that are intended for public reading/writing. For such applications it is recommended to use the [CIP 68](https://cips.cardano.org/cips/cip68/) data-map format.
+The internal data-list format isn't convenient for datums that are intended for public reading/writing. For such applications it is recommended to use the [CIP 68](https://cips.cardano.org/cips/cip68/) data-map format.
 
-Helios will automatically use the data map format internally if any `struct` field is tagged. The tags are internally converted into the data-map keys.
+Helios will automatically use the data-map format internally if any `struct` field is tagged. The tags are internally converted into the data-map keys.
 
 ```helios
 struct TaggedRational {

@@ -142,8 +142,8 @@ const config: Config = {
       copyright: `© ${new Date().getFullYear()} Helios Lang`,
     },
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      theme: prismThemes.vsLight,
+      darkTheme: prismThemes.vsDark,
     },
     
   } satisfies Preset.ThemeConfig,
