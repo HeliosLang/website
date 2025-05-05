@@ -13,7 +13,27 @@
         "lib": ["es6", "es2022", "dom"]
     },
     "include": [
-        "node_modules/@helios-lang/*/src/**/*.js"
+        "node_modules/@helios-lang/cbor/src/**/*.js",
+        "node_modules/@helios-lang/codec-utils/src/**/*.js",
+        "node_modules/@helios-lang/compiler/src/**/*.js",
+        "node_modules/@helios-lang/compiler-utils/src/**/*.js",
+        "node_modules/@helios-lang/contract-utils/src/index.js",
+        "node_modules/@helios-lang/contract-utils/src/artifacts/**/*.js",
+        "node_modules/@helios-lang/contract-utils/src/cast/**/*.js",
+        "node_modules/@helios-lang/contract-utils/src/codegen/**/*.js",
+        "node_modules/@helios-lang/contract-utils/src/compiler/**/*.js",
+        "node_modules/@helios-lang/contract-utils/src/context/index.js",
+        "node_modules/@helios-lang/contract-utils/src/context/CacheEntry.js",
+        "node_modules/@helios-lang/contract-utils/src/context/ContractContextBuilder.js",
+        "node_modules/@helios-lang/contract-utils/src/context/ContractContextCache.js",
+        "node_modules/@helios-lang/contract-utils/src/context/DagCompiler.js",
+        "node_modules/@helios-lang/crypto/src/**/*.js",
+        "node_modules/@helios-lang/era/src/**/*.js",
+        "node_modules/@helios-lang/ir/src/**/*.js",
+        "node_modules/@helios-lang/ledger/src/**/*.js",
+        "node_modules/@helios-lang/tx-utils/src/**/*.js",
+        "node_modules/@helios-lang/type-utils/src/**/*.js",
+        "node_modules/@helios-lang/uplc/src/**/*.js"
     ],
     "exclude": ["node_modules/@helios-lang/type-utils/src/typedoc-external-links-resolver.js"]
 }

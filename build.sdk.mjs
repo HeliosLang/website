@@ -4,6 +4,7 @@ const MAIN_PACKAGES = [
     "cbor",
     "codec-utils",
     "compiler",
+    "contract-utils",
     "crypto",
     "ledger",
     "tx-utils",
@@ -534,16 +535,25 @@ function stringifyType(pkgName, t, indent = "") {
                     return t.name + typeParams
                 }
             case "reflection":
-                if (t.declaration.children) {
-                    const innerIndent = t.declaration.children?.length > 1 ? indent + TAB : indent
-                    const afterOpenBrace = t.declaration.children?.length > 1 ? "\n" + innerIndent : ""
-                    const separator = t.declaration.children?.length > 1 ? afterOpenBrace : ", "
-                    const beforeCloseBrace = t.declaration.children?.length > 1 ? "\n" + indent : ""
+                if (t.declaration.children || t.declaration.indexSignatures) {
+                    const nEntries = t.declaration.children?.length + t.declaration.indexSignatures?.length
 
-                    return `\\{${afterOpenBrace}${t.declaration.children.map(ct => {
+                    const innerIndent = nEntries ? indent + TAB : indent
+                    const afterOpenBrace = nEntries ? "\n" + innerIndent : ""
+                    const separator = nEntries ? afterOpenBrace : ", "
+                    const beforeCloseBrace = nEntries ? "\n" + indent : ""
+
+                    const children = t.declaration.children ?? []
+                    const indexSignatures = t.declaration.indexSignatures ?? []
+
+                    return `\\{${afterOpenBrace}${children.map(ct => {
                         const key = `${ct.name}${ct.flags.isOptional ? "?" : ""}`
                         return `${key}${stringifyMaybeFunctionTypeProperty(pkgName, ct, innerIndent)}`
-                    }).join(separator)}${beforeCloseBrace}\\}`
+                    }).concat(indexSignatures.map(is => {
+                        const params = is.parameters ?? []
+                        const key = `&lsqb;${params.map(p => `${p.name}: ${stringifyType(pkgName, p.type, indent)}`).join(", ")}&rsqb;`
+                        return `${key}: ${stringifyType(pkgName, is.type, indent)}`
+                    })).join(separator)}${beforeCloseBrace}\\}`
                 } else {
                     return stringifyFunctionSignatures(pkgName, t.declaration.signatures, indent)
                 }
@@ -556,6 +566,12 @@ function stringifyType(pkgName, t, indent = "") {
                 }
             case "intersection":
                 return t.types.map(it => stringifyType(pkgName, it, indent)).join(" & ")
+            case "typeOperator":
+                return `${t.operator} ${stringifyType(pkgName, t.target, indent)}`
+            case "mapped": 
+                return `\\{&lsqb;${t.parameter} in ${stringifyType(pkgName, t.parameterType, indent)}&rsqb;: ${stringifyType(pkgName, t.templateType, indent)}\\}`
+            case "indexedAccess":
+                return `${stringifyType(pkgName, t.objectType, indent)}&lsqb;${stringifyType(pkgName, t.indexType, indent)}&rsqb;`
             case "literal":
                 if (typeof t.value == "string") {
                     return `"${t.value.replaceAll("{", "\\{")}"`
@@ -565,7 +581,7 @@ function stringifyType(pkgName, t, indent = "") {
             case "tuple":
                 const parts = (t.elements ?? []).map(et => stringifyType(pkgName, et, indent))
 
-                return joinGroup("[", parts, "]", indent)
+                return joinGroup("&lsqb;", parts, "&rsqb;", indent)
             default: 
                 return "unknown"
         }

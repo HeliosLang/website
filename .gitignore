@@ -6,6 +6,7 @@ typedoc
 docs/sdk/cbor
 docs/sdk/codec-utils
 docs/sdk/compiler
+docs/sdk/contract-utils
 docs/sdk/crypto
 docs/sdk/ledger
 docs/sdk/tx-utils
