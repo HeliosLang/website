@@ -554,7 +554,9 @@ function stringifyType(pkgName, t, indent = "") {
                         const key = `&lsqb;${params.map(p => `${p.name}: ${stringifyType(pkgName, p.type, indent)}`).join(", ")}&rsqb;`
                         return `${key}: ${stringifyType(pkgName, is.type, indent)}`
                     })).join(separator)}${beforeCloseBrace}\\}`
-                } else {
+                } else if (t.declaration.signatures && t.declaration.signatures.length == 1 && t.declaration.signatures[0].kind == 16384) {
+                    return stringifyConstructorSignature(pkgName, t.declaration.signatures[0], indent)
+                 } else {
                     return stringifyFunctionSignatures(pkgName, t.declaration.signatures, indent)
                 }
             case "union":
@@ -620,6 +622,17 @@ function stringifyFunctionSignatures(pkgName, signatures, indent = "", arrow = "
     } else {
         return "unknown"
     }
+}
+
+/**
+ * @param {string} pkgName 
+ * @param {SignatureReflection} signature 
+ * @param {string} [indent]
+ * @returns {string}
+ */
+function stringifyConstructorSignature(pkgName, signature, indent = "") {
+    const innerIndent = indent + TAB
+    return `${indent}\\{\n${innerIndent}new${stringifyFunctionSignature(pkgName, signature, innerIndent, " => ")}\n${indent}\\}`
 }
 
 /**

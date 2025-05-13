@@ -76,8 +76,8 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5
       '@helios-lang/ir':
-        specifier: ^0.3.8
-        version: 0.3.8
+        specifier: ^0.3.7
+        version: 0.3.7
       '@helios-lang/ledger':
         specifier: ^0.7.9
         version: 0.7.9
@@ -1234,6 +1234,9 @@ packages:
 
   '@helios-lang/era@0.1.5':
     resolution: {integrity: sha512-r6ZyLSVNMPqgMXhdtXumx3JGQ24QmCST77CmXypF0UaLzgZBj19bUt2UGX7P8MNth4VRlKsT42EqEfMh7KirsA==}
+
+  '@helios-lang/ir@0.3.7':
+    resolution: {integrity: sha512-EHgyhjss1Nw7JNuTYnkOZqfk6XQBGcgd/QlMXWwe4iZtZphQMu5SzoEahubQoMa+0kN65RicHlfcREKkZX2whA==}
 
   '@helios-lang/ir@0.3.8':
     resolution: {integrity: sha512-8xDSlIyrev4aIUUEbdcPfDJFSf3HCwgK9CXFCrog9vE60n2d2SRY++s5hTDlkYOx2OIa00fkr3sW3ryZ/pJ0Tg==}
@@ -7137,6 +7140,13 @@ snapshots:
       '@helios-lang/type-utils': 0.2.9
 
   '@helios-lang/era@0.1.5': {}
+
+  '@helios-lang/ir@0.3.7':
+    dependencies:
+      '@helios-lang/codec-utils': 0.3.4
+      '@helios-lang/compiler-utils': 0.5.15
+      '@helios-lang/type-utils': 0.2.9
+      '@helios-lang/uplc': 0.7.15
 
   '@helios-lang/ir@0.3.8':
     dependencies:
