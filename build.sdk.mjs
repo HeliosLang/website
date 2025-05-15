@@ -536,12 +536,13 @@ function stringifyType(pkgName, t, indent = "") {
                 }
             case "reflection":
                 if (t.declaration.children || t.declaration.indexSignatures) {
-                    const nEntries = t.declaration.children?.length + t.declaration.indexSignatures?.length
+                    const nEntries = (t.declaration.children?.length ?? 0) + (t.declaration.indexSignatures?.length ?? 0)
+                    const nlBetweenEntries = nEntries > 1
 
-                    const innerIndent = nEntries ? indent + TAB : indent
-                    const afterOpenBrace = nEntries ? "\n" + innerIndent : ""
-                    const separator = nEntries ? afterOpenBrace : ", "
-                    const beforeCloseBrace = nEntries ? "\n" + indent : ""
+                    const innerIndent = nlBetweenEntries ? indent + TAB : indent
+                    const afterOpenBrace = nlBetweenEntries ? "\n" + innerIndent : ""
+                    const separator = nlBetweenEntries ? afterOpenBrace : ", "
+                    const beforeCloseBrace = nlBetweenEntries ? "\n" + indent : ""
 
                     const children = t.declaration.children ?? []
                     const indexSignatures = t.declaration.indexSignatures ?? []
