@@ -341,7 +341,7 @@ function writeInterfaceDoc(pkgName, decl) {
     // write a snippet each attribute
     for (let attr of decl.children) {
         const name = attr.name
-        const attrType = stringifyMaybeFunctionInterfaceProperty(pkgName, attr.type)
+        const attrType = stringifyMaybeFunctionInterfaceProperty(pkgName, attr)
         const attrComment = stringifyComment(pkgName, attr.comment)
 
         content.push([
@@ -484,15 +484,18 @@ function stringifyFunctionParams(pkgName, params, indent = "") {
 
 /**
  * @param {string} pkgName 
- * @param {SomeType | undefined} t 
+ * @param {DeclarationReflection} decl
  * @param {string} indent 
  * @returns {string}
  */
-function stringifyMaybeFunctionInterfaceProperty(pkgName, t, indent = "") {
-    if (t && t.type == "reflection") {
+function stringifyMaybeFunctionInterfaceProperty(pkgName, decl, indent = "") {
+    const t = decl.type
+    const isOptional = decl.flags.isOptional
+
+    if (t && t.type == "reflection" && !isOptional) {
         return stringifyMaybeFunctionTypeProperty(pkgName, t.declaration, indent)
     } else {
-        return `: ${stringifyType(pkgName, t, indent)}`
+        return `${isOptional ? "?" : ""}: ${stringifyType(pkgName, t, indent)}`
     }
 }
 
@@ -599,13 +602,14 @@ function stringifyType(pkgName, t, indent = "") {
  */
 function stringifyMaybeFunctionTypeProperty(pkgName, decl, indent = "") {
     const funcSignatures = decl.signatures && decl.signatures.length > 0 ? decl.signatures : (decl.type && decl.type.type == "reflection" && decl.type.declaration.signatures) ? decl.type.declaration.signatures : undefined
-    const isFunction = !decl.flags.isOptional && (funcSignatures && funcSignatures.length > 0)
+    const isOptional = decl.flags.isOptional
+    const isFunction = !isOptional && (funcSignatures && funcSignatures.length > 0)
     const value =  isFunction ? 
         stringifyFunctionSignatures(pkgName, funcSignatures, indent, ": "): 
         decl.type ? 
             stringifyType(pkgName, decl.type, indent) : 
             "unknown"
-    return `${isFunction ? "" : ": "}${value}`
+    return `${isFunction ? "" : (isOptional ? "?: " : ": ")}${value}`
 }
 
 /**
