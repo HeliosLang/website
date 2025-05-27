@@ -19,7 +19,7 @@ Alice needs the ability to cancel the contract if Bob leaves the company early, 
 
 The contract logic can be summarized as:
 
-   - Alice can redeem the token before one year, using    Charlie's signature
+   - Alice can redeem the tokens before one year, using Charlie's signature
    - Bob can redeem the tokens after one year
 
 ## Bitcoin
