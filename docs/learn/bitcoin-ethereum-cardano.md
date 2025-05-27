@@ -9,6 +9,8 @@ Bitcoin, Ethereum and Cardano are often referred to as 1st, 2nd and 3rd generati
 
 This article explains the ledger models of each, and how they can be used for a common financial contract: a basic vesting contract.
 
+Such a concrete example makes it easier to understand Cardano's EUTXO model, especially for those with Bitcoin or Ethereum smart contract experience.
+
 ## Basic vesting contract
 
 Alice owns a company. She wants to reward her employee Bob with shares if he stays with the company for at least one year.
@@ -59,7 +61,7 @@ If the year passes, Bob can submit the 2nd redeeming transaction.
 
 ## Ethereum
 
-Ethereum came after Bitcoin and is the first blockchain with a Turing-complete on-chain runtime environment, called the Ethereum Virtual Machine (EVM).
+Ethereum came after Bitcoin, and is the first blockchain with a Turing-complete on-chain runtime environment, called the Ethereum Virtual Machine (EVM).
 
 EVM smart contracts are simpler than (E)UTXO smart contracts, because *state* mutations are performed directly, instead of perfoming validation and transaction building as two separate processes.
 

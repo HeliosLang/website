@@ -5,7 +5,7 @@ sidebar_position: 2
 
 Before starting coding we first need to understand how smart contracts work on Cardano and how Cardano differs from the more conventional account-based model.
 
-> **Note**: EUTXO is an abbreviation of *extended Unspent Transaction Outputs*
+> **Note**: EUTXO is an abbreviation of *Extended Unspent Transaction Outputs*
 
 ## Account-based model vs EUTXO model
 
