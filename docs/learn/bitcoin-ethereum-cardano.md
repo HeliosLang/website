@@ -24,9 +24,9 @@ The contract logic can be summarized as:
 
 ## Bitcoin
 
-Bitcoin is the first ever blockchain, and pioneered the Unspent Transaction Output (UTXO) model.
+Bitcoin pioneered the Unspent Transaction Output (UTXO) model.
 
-Bitcoin is notable for not allowing Turing complete smart contracts. This means that arbitrary logic cannot be expressed by Bitcoin smart contracts.
+Bitcoin is notable for not allowing Turing-complete smart contracts. This means that arbitrary logic cannot be expressed by Bitcoin smart contracts.
 
 Though Bitcoin doesn't support attaching datums to UTXOs, the notion of *state* still exists. The *state* of a Bitcoin smart contract is what value sits at which addresses at any given time (ie. the valid set of UTXOs).
 
@@ -34,7 +34,7 @@ Bitcoin transactions evolve the *state* of a Bitcoin smart contract.
 
 If all possible states of a Bitcoin smart contract are known in advance, then all possible transactions can be created in advance as well, and pre-signed by the contract parties.
 
-Which transactions are valid depends on the logic of each address. Bitcoin script logic typically consists of:
+Which transactions are valid depends on the script logic of each address. Bitcoin script logic typically consists of:
 
    - Relative or absolute time-locks
    - Required signatures
@@ -59,7 +59,7 @@ If the year passes, Bob can submit the 2nd redeeming transaction.
 
 ## Ethereum
 
-Ethereum came after Bitcoin and is the first blockchain with a Turing complete on-chain runtime environment, called the Ethereum Virtual Machine (EVM).
+Ethereum came after Bitcoin and is the first blockchain with a Turing-complete on-chain runtime environment, called the Ethereum Virtual Machine (EVM).
 
 EVM smart contracts are simpler than (E)UTXO smart contracts, because *state* mutations are performed directly, instead of perfoming validation and transaction building as two separate processes.
 
@@ -83,13 +83,13 @@ The `cancel` function takes Charlie's signature as an argument. If the signature
 
 The `redeem` function doesn't take any arguments, and checks that one year has passed and that `tx.origin` is equal to Bob's address. The tokens will then be withdrawn to Bob's address.
 
-> Note: the ERC-20 `withdraw` function only allows withdrawals from the `msg.sender` address, which corresponds to address of the vesting contract.
+> Note: the ERC-20 `withdraw` function only allows withdrawals from the `msg.sender` address, which corresponds to the address of the vesting contract.
 
 ## Cardano
 
 Cardano uses  the EUTXO model and is similar to Bitcoin. But Cardano's EUTXO model isn't a superset of Bitcoin's UTXO model because it doesn't support unlock scripts and misses relative time-locks.
 
-Cardano does however allow creating Turing complete lock scripts called *validators*. This means that the unlock logic can be part of the validator, and can be triggered depending on which redeemer arguments are passed in when spending UTXOs.
+Cardano does however allow creating Turing-complete lock scripts called *validators*. This means that the unlock logic can be part of the validator, and can be triggered depending on which redeemer arguments are passed in when spending UTXOs.
 
 Pre-creating and signing all possible transactions, though offering better privacy, is inconvenient. It is much easier to use Cardano's EUTXO model, which allows Alice to send the tokens directly to an appropriate validator.
 
@@ -103,7 +103,7 @@ The Helios implementation of the basic vesting contract:
 ```helios
 spending vesting
 
-import { get_current_input, tx } from ScriptContext
+import { tx } from ScriptContext
 
 const T0: Time
 const ALICE: PubKeyHash
