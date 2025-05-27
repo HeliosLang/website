@@ -1,13 +1,13 @@
 ---
 sidebar_position: 2
 ---
-# Understanding eUTxOs
+# Understanding EUTXOs
 
 Before starting coding we first need to understand how smart contracts work on Cardano and how Cardano differs from the more conventional account-based model.
 
-> **Note**: eUTxO is an abbreviation of *extended Unspent Transaction Outputs*
+> **Note**: EUTXO is an abbreviation of *extended Unspent Transaction Outputs*
 
-## Account-based model vs eUTxO model
+## Account-based model vs EUTXO model
 
 Smart contracts on Cardano are quite different from those on Ethereum.
 
@@ -19,9 +19,9 @@ Contracts interact with these balances and run via the EVM (Ethereum Virtual Mac
 
 >**Note**: the data of all accounts on Ethereum are stored in a [**Merkle-Patricia trie**](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/), which is like a fancy hashmap. After all the transactions in a block are run, the root hash of the block trie is added to the chain.
 
-### The eUTxO model
+### The EUTXO model
 
-In the eUTxO model tokens are stored in UTxOs. A UTxO is like (electronic)-cash where each individual bundle of bills (Ada and native-tokens) is stored separately.
+In the EUTXO model tokens are stored in UTxOs. A UTxO is like (electronic)-cash where each individual bundle of bills (Ada and native-tokens) is stored separately.
 
 A transaction in the UTxO model takes one or more UTxOs as **transaction inputs**, which are destroyed, and creates one or more UTxOs as **transaction outputs**.
 
@@ -52,7 +52,7 @@ Each UTxO contains some tokens, which represent value on the blockchain. Tokens 
 
 The *datum* is data that is attached to UTxOs. A datum represents the state of a smart contract, and is immutable (smart contract state can change though, by spending old UTxOs and creating new ones).
 
-The 'e' (*extended*) in eUTxO comes from the datum. The Bitcoin UTxO model doesn't have datums, giving Bitcoin scripts very limited capabilities. *Extending* the UTxO model, as done by Cardano and Ergo, gives an eUTxO model the same capabilities as an account-based model, while benefitting from a much safer approach to transactions (because a global state isn't being accessed/mutated).
+The 'E' (*Extended*) in EUTXO comes from the datum. The Bitcoin UTxO model doesn't have datums, giving Bitcoin scripts very limited capabilities. *Extending* the UTxO model, as done by Cardano and Ergo, gives an EUTXO model the same capabilities as an account-based model, while benefitting from a much safer approach to transactions (because a global state isn't being accessed/mutated).
 
 ## Validator scripts
 
@@ -63,7 +63,7 @@ A validator script is a function that is evaluated when a transaction attempts t
    
 The validator script then calculates whether or not the UTxO is allowed to be spent (essentially returning a boolean result).
 
-Separating the validation logic from the transaction building/submitting logic makes it much easier to audit the trusted part of eUTxO dApps.
+Separating the validation logic from the transaction building/submitting logic makes it much easier to audit the trusted part of EUTXO dApps.
 
 Helios is all about writing these validator scripts.
 
@@ -73,25 +73,25 @@ Helios is all about writing these validator scripts.
 > - the transaction must be balanced: the total amount of tokens in the transaction inputs must be equal to those in the transaction outputs (minus the fees, plus the minted tokens).
 > - the validators for all the transaction inputs must evaluate to `true`.
 
-## Pros and cons of the eUTxO Model
+## Pros and cons of the EUTXO Model
 
 ### Pros
 
 - #### Deterministic transaction fees
 
-  eUTxO smart contract evaluation is deterministic. This means that you can calculate the resource usage of a transaction before posting it to the blockchain. The transaction fees for a transaction can thus be calculated deterministically off-chain.
+  EUTXO smart contract evaluation is deterministic. This means that you can calculate the resource usage of a transaction before posting it to the blockchain. The transaction fees for a transaction can thus be calculated deterministically off-chain.
   
   The transaction fees of account-based blockchains depend on network load, and can vary a lot.
 
 - #### Transaction fees not charged upon failure
-  The determinism of the eUTxO model means that transaction success can be determined before posting. Transaction failure is still possible due to contention, but this is a very cheap check, and no fee is charged.
+  The determinism of the EUTXO model means that transaction success can be determined before posting. Transaction failure is still possible due to contention, but this is a very cheap check, and no fee is charged.
   
   Transaction failure on account-based blockchains results in losing the fee, as significant processing power might've been used before encountering the failure condition.
 
 
 - #### Easier to audit
 
-  Auditing of eUTxO smart contracts is much easier because only the validation function needs to be audited, which has a very **locally-scoped** nature.
+  Auditing of EUTXO smart contracts is much easier because only the validation function needs to be audited, which has a very **locally-scoped** nature.
 
 - #### Concurrency
 
@@ -104,13 +104,13 @@ Helios is all about writing these validator scripts.
 
 - #### Simpler
 
-  Though not immediately obvious, eUTxO smart contracts are often much simpler than an equivalent Solidity smart contract (this will become apparant when you start to use Helios).
+  Though not immediately obvious, EUTXO smart contracts are often much simpler than an equivalent Solidity smart contract (this will become apparant when you start to use Helios).
 
 ### Cons
 
 - #### Contention
 
-  If eUTxO contracts aren't designed properly they can encounter *contention* problems. Contention occurs when two or more transactions try to spend the same UTxO. If this happens only one of the transactions will succeed, and the others will fail (resulting in an unpleasant user experience).
+  If EUTXO contracts aren't designed properly they can encounter *contention* problems. Contention occurs when two or more transactions try to spend the same UTxO. If this happens only one of the transactions will succeed, and the others will fail (resulting in an unpleasant user experience).
 
   This is usually not an issue on Ethereum because the EVM handles ordering smart contract calls.
 
@@ -118,5 +118,5 @@ Helios is all about writing these validator scripts.
 
 ## Further reading
 
-If you feel like you still don't fully understand the eUTxO model, we recommend you keep reading:
-  * [Learning Ergo 101 : eUTXO explained for human beings](https://dav009.medium.com/learning-ergo-101-blockchain-paradigm-eutxo-c90b0274cf5e), a great blog post by [David Pryzbilla](https://github.com/dav009)
+If you feel like you still don't fully understand the EUTXO model, we recommend you keep reading:
+  * [Learning Ergo 101 : EUTXO explained for human beings](https://dav009.medium.com/learning-ergo-101-blockchain-paradigm-eutxo-c90b0274cf5e), a great blog post by [David Pryzbilla](https://github.com/dav009)

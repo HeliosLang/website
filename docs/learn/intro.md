@@ -66,4 +66,4 @@ The printed output is the hex encoded bytecode of the validator.
 
 ## Further reading
 
-Before starting to use Helios to create smart contracts and build dApps it is important to understand Cardano's eUTxO model very well. If you don't yet, we recommend you read the [Understanding eUTxOs](./understanding-eutxos) preface first.
+Before starting to use Helios to create smart contracts and build dApps it is important to understand Cardano's EUTXO model very well. If you don't yet, we recommend you read the [Understanding EUTXOs](./understanding-eutxos) preface first.
