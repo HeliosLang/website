@@ -49,7 +49,7 @@ Alice and Bob agree to create and sign two more transactions:
 
 Both transactions are signed by both Alice and Bob, thus both match the lock criterium of the initial 2-of-2 multi-signature address. The 1st redeeming transaction is valid before the end of the year, but is still missing Charlie's signature. The 2nd redeeming transaction is valid after one year. 
 
-Once both Alice and Bob have the (partially) signed redeeming transactions, Alice submits the initial transaction to the blockchain.
+Once both Alice and Bob have the (partially) signed redeeming transactions, Alice signs and submits the initial transaction to the blockchain.
 
 If Bob leaves the company early, Alice asks Charlie for his signature, and she submits the 1st redeeming transaction.
 
@@ -72,7 +72,7 @@ The *state* of the EVM vesting contract consists of:
    - Bob's address
    - Charlie's public key
 
-The *state* is initialized, giving the contract instance a unique address. Then Alice can send the tokens to the contract address.
+The contract *state* is initialized upon contract creation, giving it a unique address. Then Alice can send the tokens to the contract address.
 
 The vesting contract has two exported functions: 
   
@@ -91,14 +91,14 @@ Cardano uses  the EUTXO model and is similar to Bitcoin. But Cardano's EUTXO mod
 
 Cardano does however allow creating Turing complete lock scripts called *validators*. This means that the unlock logic can be part of the validator, and can be triggered depending on which redeemer arguments are passed in when spending UTXOs.
 
-Pre-creating and signing all possible transactions, though offering better privacy, is inconvenient. It much easier to use Cardano's EUTXO model, which allows Alice to send the tokens directly to an appropriate validator.
+Pre-creating and signing all possible transactions, though offering better privacy, is inconvenient. It is much easier to use Cardano's EUTXO model, which allows Alice to send the tokens directly to an appropriate validator.
 
 That validator then uses the following rules to validate the redeeming transaction:
 
    - If less than one year has passed, the transaction must be signed by both Alice and Charlie (Alice can send the tokens wherever she wants)
    - If more than one year has passed, the transaction must be signed by Bob (he can send the tokens wherever he wants)
 
-Like the Ethereum vesting contract, the state doesn't change during the execution of the contact, and can be set using constant global parameters:
+The Helios implementation of the basic vesting contract:
 
 ```helios
 spending vesting
