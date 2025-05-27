@@ -110,7 +110,7 @@ const ALICE: PubKeyHash
 const BOB: PubKeyHash
 const CHARLIE: PubKeyHash
 
-func main(_, _) -> () {
+func main(_, _) -> Bool {
     if (tx.time_range.is_after(T0 + 365*Duration::DAY)) {
         tx.is_signed_by(BOB)
     } else {
