@@ -83,7 +83,7 @@ The `cancel` function takes Charlie's signature as an argument. If the signature
 
 The `redeem` function doesn't take any arguments, and checks that one year has passed and that `tx.origin` is equal to Bob's address. The tokens will then be withdrawn to Bob's address.
 
-> Note: the ERC-20 `withdraw` function will check that the contract belonging to the tokens' address is actually executed.
+> Note: the ERC-20 `withdraw` function only allows withdrawals from the `msg.sender` address, which corresponds to address of the vesting contract.
 
 ## Cardano
 
