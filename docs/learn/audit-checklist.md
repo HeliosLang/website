@@ -20,7 +20,9 @@ Transaction outputs can contain tokens, datums, and reference scripts.
 
 Contract UTXOs are UTXOs that persist contract state, and must remain as clean as possible in order not to prevent them from becoming unspendable by subsequent transactions. 
 
-UTXOs can become unspendable if a validator iterates over its content (i.e. iterates over its tokenlist, or iterates over its datum fields). Datum fields should also be bounded, because the execution cost of performing operations on those datum fields, increases with increased size.
+UTXOs can become unspendable if a validator iterates over its content (i.e. iterates over its tokenlist, or iterates over its datum fields). In more extreme cases, lists contained in transaction inputs are checked to be singletons, and can thus become unspendable due to that check.
+
+Datum fields should also be bounded, because the execution cost of performing operations on those datum fields, increases with increased size.
 
 Reference script spam is not critical, as unused reference scripts only add to the transaction fee, which doesn't have an upper limit.
 
