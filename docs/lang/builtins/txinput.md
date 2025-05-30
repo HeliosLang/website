@@ -17,7 +17,7 @@ TxInput::from_data(data: Data) -> TxInput
 
 ### `new`
 
-Construct a `TxInput` instance. **Only available after `main`**, see [script structure](../script-structure/index.md#data-generators-and-test-functions-5).
+Construct a `TxInput` instance.
 
 ```helios
 TxInput::new(

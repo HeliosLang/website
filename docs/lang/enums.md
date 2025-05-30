@@ -31,11 +31,11 @@ The un-annotated `self` argument of `enum` methods, is implicitly typed as the e
 
 ## `Data`
 
-[`Data`](../builtins/data.md) is a special builtin enum with 5 members:
-  * [`Date::IntData`](../builtins/int.md)
-  * [`Data::ByteArrayData`](../builtins/bytearray.md)
-  * [`Data::ListData`](../builtins/list.md)
-  * [`Data::MapData`](../builtins/map.md)
+[`Data`](./builtins/data.md) is a special builtin enum with 5 members:
+  * `Date::IntData`
+  * `Data::ByteArrayData`
+  * `Data::ListData`
+  * `Data::MapData`
   * `Data::ConstrData`
 
 A `switch` expression over `Data` can use any of these as case types:

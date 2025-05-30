@@ -44,7 +44,7 @@ function HeroButtons() {
     <StyledHeroButtons>
       <Link
         className="button button--secondary button--lg"
-        to="/docs/intro">
+        to="/docs/learn/intro">
         Get started
       </Link>
     </StyledHeroButtons>

@@ -14,7 +14,7 @@ The equality and inequality operators are automatically defined on every type (e
 
 Instantiates a copy of the underlying value, with some of the fields changed.
 
-This method has the same number of arguments as the number of fields in the user-defined `struct` or `enum`-variant. Each argument of `copy` has the same name as the corresponding field and is optional (see [named arguments](../../functions/named_arguments.md)).
+This method has the same number of arguments as the number of fields in the user-defined `struct` or `enum`-variant. Each argument of `copy` has the same name as the corresponding field and is optional (see [named arguments](./functions#named-arguments)).
 
 ```helios
 struct Pair {
@@ -31,15 +31,13 @@ pair.copy(second: 3) // == Pair{1, 3}
 
 ## `from_data`
 
-`from_data` is an [associated function](./associated-functions-and-constants.md) that is automatically defined on every user-type, and thus `from_data` is a reserved name that can't be used for other methods.
+`from_data` is an [associated function](./structs.md#associated-functions-and-constants) that is automatically defined on every user-type, and thus `from_data` is a reserved name that can't be used for other methods.
 
 `from_data` converts a typeless `Data` into something typed.
 
 ```helios
 MyType::from_data(data: Data) -> MyType
 ```
-
-If you set [`CHECK_CASTS`](../../../api/reference/namespaces/config.md#check_casts) to `true`, a warning will be printed if the structure of `data` doesn't match the type.
 
 ## `is_valid_data`
 

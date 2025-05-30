@@ -17,7 +17,7 @@ Tx::from_data(data: Data) -> Tx
 
 ### `new`
 
-Construct a `Tx` instance. **Only available after `main`**, see [script structure](../script-structure/index.md#data-generators-and-test-functions-5).
+Construct a `Tx` instance.
 
 ```helios
 Tx::new(

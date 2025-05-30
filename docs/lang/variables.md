@@ -40,13 +40,13 @@ Variables can also be defined at the *top-level* of a script, or inside `struct`
 const AGE = 123
 ```
 
-`const` statements can be [`changed`](../api/reference/classes/Program.md#parameters-1) using the Helios API (see [`parameterized contracts`](./validators#parameters)).
+`const` statements can be [`changed`](../sdk/compiler/Program.md#parameters-1) using the Helios API (see [`parameterized contracts`](./validators.md#parameters)).
 
 > **Note**: the right-hand side of `const` can contain complex expressions and even function calls. The compiler is smart enough to evaluate these at compile-time.
 
 ### `const` without right-hand-side
 
-The right-hand-side of a `const` statement can be omitted, in which case it *must* have a type annotation, and its value must be set using the Helios API before compiling (see [`program.parameters`](../api/reference/classes/Program.md#parameters-1)):
+The right-hand-side of a `const` statement can be omitted, in which case it *must* have a type annotation, and its value must be set using the Helios API before compiling (see [`program.parameters`](../sdk/compiler/Program.md#parameters-1)):
 
 ```helios
 const MY_PARAMETER: ValidatorHash

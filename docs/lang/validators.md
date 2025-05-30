@@ -45,7 +45,7 @@ spending my_validator
 ...
 ```
 
-`module` is covered in the [next section](../modules).
+`module` is covered in the [next section](./modules.md).
 
 > **Note**: the name of each Helios source is registered in the global scope, so these names can't be used by statements, nor for the lhs of assignments. So eg. the entrypoint script can't be named `main` as that would conflict with the entrypoint function.
 
@@ -63,7 +63,7 @@ The redeemer can have any type.
 
 ## Script context
 
-Most of the data needed for writing useful validators is contained in the `tx` field of the [`ScriptContext`](../builtins/scriptcontext.md), which must be imported.
+Most of the data needed for writing useful validators is contained in the `tx` field of the [`ScriptContext`](./builtins/scriptcontext.md), which must be imported.
 
 ```helios
 spending my_validator
@@ -90,7 +90,7 @@ func main(datum: MyDatum, _) -> Bool {
 
 Parameterizing validators allows dApp developers to create separate instances of a Helios program.  
 
-In Helios, this is done by [`re-binding`](../../api/reference/classes/Program.md#parameters-1) one or more top-level `const PARAM_NAME = ...` declarations.  
+In Helios, this is done by [`re-binding`](../sdk/compiler/Program.md#parameters-1) one or more top-level `const PARAM_NAME = ...` declarations.  
 
 After re-binding any const parameters to a different value, the resulting program will have a **different contract address**.
 
@@ -111,14 +111,17 @@ func main(_, _, ctx: ScriptContext) -> Bool {
 The parameter can be changed before compiling to the final Uplc format:
 
 ```ts
-const program = helios.Program.new(src);
+import { Program } from "@helios-lang/compiler"
+import { makePubKeyHash } from "@helios-lang/ledger"
 
-program.parameters.OWNER = new helios.PubKeyHash("...");
+const program = new Program(src)
 
-const uplcProgram = program.compile();
+program.parameters.OWNER = makePubKeyHash("...")
+
+const uplcProgram = program.compile()
 ```
 
-Many Helios API types can be used when rebinding the parameters. Also the user-defined types are available through [`program.types`](../../api/reference/classes/Program.md#types). Besides using Helios API types, Javascript primitive objects (i.e. JSON-like) can be used to re-bind a parameter in some cases.
+Many Helios API types can be used when rebinding the parameters. Also the user-defined types are available through [`program.types`](../sdk/compiler/Program.md#types). Besides using Helios API types, Javascript primitive objects (i.e. JSON-like) can be used to re-bind a parameter in some cases.
 
 ### Contrast with Datum
 

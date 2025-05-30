@@ -4,7 +4,7 @@ sidebar_position: 14
 
 # Modules
 
-Helios top-level statements can be placed in modules and can then be imported by other Helios sources. Modules can be made available during compile-time by including them in a list as the second argument of the [`Program` constructor](../api/reference/classes/Program.md).
+Helios top-level statements can be placed in modules and can then be imported by other Helios sources. Modules can be made available during compile-time by including them in a list as the second argument of the [`Program` constructor](../sdk/compiler/Program.md).
 
 ## `import`
 

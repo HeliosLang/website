@@ -6,7 +6,7 @@ sidebar_class_name: enum_badge
 
 # <span className="enum_badge">Data</span>
 
-Represents type-less data, as returned by the [`OutputDatum.get_inline_data()`](./outputdatum.md#get_inline_data). Can be cast directly into any other type using `from_data`, or indirectly using [`switch`](../user-defined-types/enums.md#data).
+Represents type-less data, as returned by the [`OutputDatum.get_inline_data()`](./outputdatum.md#get_inline_data). Can be cast directly into any other type using `from_data`, or indirectly using [`switch`](../enums.md#data).
 
 ## Getters
 

@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # Destructuring
 
-[Switch cases](./enums.md#switch) and [assignments](../variables.md#assignment) have special syntax for destructuring user-defined [structs](./structs.md) and [enum](./enums.md) members.
+[Switch cases](./control-flow.md#switch) and [assignments](./variables.md#assignment) have special syntax for destructuring user-defined [structs](./structs.md) and [enum](./enums.md) members.
 
 Destructuring in Helios has the following properties:
 * can be arbitrarily nested

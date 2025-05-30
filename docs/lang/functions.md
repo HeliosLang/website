@@ -94,11 +94,11 @@ sub(b: 1, a: 2) // == 1
 
 A function call can't mix named arguments with positional arguments.
 
-Named arguments are mostly used when calling the [`copy()`](../user-defined-types/methods/automatic-methods.md#copy) method.
+Named arguments are mostly used when calling the [`copy()`](./automatic-methods.md#copy) method.
 
 ## Multiple return values
 
-A Helios function can return multiple values using [tuples](./containers#tuple):
+A Helios function can return multiple values using [tuples](./containers.md#tuple):
 
 ```helios
 func swap(a: Int, b: Int) -> (Int, Int) {
@@ -163,7 +163,7 @@ assert(condition, "should be true")
 
 ### `error`
 
-The builtin `error` function can be used to throw errors inside branches of [`if-else`](./if-else) expressions, and cases of [`switch`](./user-defined-types/enums.md#switch) expressions. At least one branch or case must be non-error-throwing for the `if-else` or `switch` expression to return a non-void value.
+The builtin `error` function can be used to throw errors inside branches of [`if-else`](./control-flow.md#if-else) expressions, and cases of [`switch`](./control-flow.md#switch) expressions. At least one branch or case must be non-error-throwing for the `if-else` or `switch` expression to return a non-void value.
 
 ```helios
 if (cond) {
@@ -207,7 +207,7 @@ func fib(n: Int) -> Int {
 }
 ```
 
-> **Note:**: a function can only reference itself when recursing. Helios doesn't support hoisting, so mutual recursion by referring to functions defined after the current function in the top-scope isn't possible (for [struct and enum methods](../user-defined-types/methods/index.md) this is however possible):
+> **Note:**: a function can only reference itself when recursing. Helios doesn't support hoisting, so mutual recursion by referring to functions defined after the current function in the top-scope isn't possible (for [struct methods](./structs.md#methods) and [enum methods](./enums.md#methods) this is however possible):
 >
 > ```helios
 > 01 func a(n: Int) -> Int {

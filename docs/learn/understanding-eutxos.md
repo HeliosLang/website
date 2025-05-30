@@ -42,7 +42,7 @@ The address of a UTxO determines the owner (i.e. who has the right to spend it).
 
 A user's balance is calculated by summing all UTxOs sitting at addresses *owned* by that user.
 
-An address can either be derived from the hash of a user's public key ([`PubKeyHash`](./lang/builtins/pubkeyhash.md) in Helios), or the hash of a validator script ([`ValidatorHash`](./lang/builtins/validatorhash.md) in Helios). In the latter case the script effectively becomes the owner of the UTxO.
+An address can either be derived from the hash of a user's public key ([`PubKeyHash`](../lang/builtins/pubkeyhash.md) in Helios), or the hash of a validator script ([`ValidatorHash`](../lang/builtins/validatorhash.md) in Helios). In the latter case the script effectively becomes the owner of the UTxO.
 
 ### Tokens
 
