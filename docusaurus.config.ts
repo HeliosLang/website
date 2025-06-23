@@ -89,6 +89,12 @@ const config: Config = {
           label: 'SDK reference'
         },
         {
+          type: 'docSidebar',
+          sidebarId: 'irisSidebar',
+          position: 'left',
+          label: 'Iris API'
+        },
+        {
           href: 'https://github.com/orgs/HeliosLang/repositories?q=visibility%3Apublic+archived%3Afalse+sort%3Aname-asc',
           label: 'GitHub',
           position: 'right',
@@ -118,6 +124,10 @@ const config: Config = {
             {
               label: 'SDK reference',
               to: '/docs/sdk/intro',
+            },
+            {
+              label: 'Iris API',
+              to: '/docs/iris/intro',
             }
           ],
         },
