@@ -24,13 +24,88 @@ const TAB = "&nbsp;&nbsp;"
 
 // TODO: turn this into a docusaurus plugin so it can operate during hot-reloads
 /**
- * @import { Comment, CommentDisplayPart, DeclarationReflection, ParameterReflection, ProjectReflection, SignatureReflection, SomeType, SourceReference, TypeParameterReflection } from "typedoc"
+ * @import { Comment, CommentDisplayPart, DeclarationReflection, InlineTagDisplayPart, ParameterReflection, ProjectReflection, SignatureReflection, SomeType, SourceReference, TypeParameterReflection } from "typedoc"
+ */
+
+/**
+ * @typedef {object} Context
+ * @prop {string} currentPkgName
+ * @prop {Record<string, string>} topLevelSymbolsPkgs
+ * A map from top-level symbol name to pkg name
+ * This is needed so that `@link` comments can optimistically link to symbols in downstream packages. 
  */
 
 async function main() {
-    for (let pkg of ALL_PACKAGES) {
-        writePackageDocs(pkg)
+    /**
+     * @type {Context}
+     */
+    const context = {topLevelSymbolsPkgs: {}, currentPkgName: ""}
+
+    for (let pkgName of ALL_PACKAGES) {
+        buildContext({...context, currentPkgName: pkgName})
     }
+
+    // TODO: collect top-level symbols before, 
+    for (let pkgName of ALL_PACKAGES) {
+        writePackageDocs({...context, currentPkgName: pkgName})
+    }
+}
+
+/**
+ * @param {Context} context
+ */
+function buildContext(context) {
+    const pkgDoc = readPkgDoc(context.currentPkgName)
+
+    for (let child of pkgDoc.children) {
+        context.topLevelSymbolsPkgs[child.name] = pkgDoc.name
+    }
+}
+
+/**
+ * @param {Context} context
+ */
+function writePackageDocs(context) {
+    /**
+     * @type {ProjectReflection}
+     */
+    const pkgDoc = readPkgDoc(context.currentPkgName)
+
+    const pkgVersion = getHeliosPackageVersion(context.currentPkgName)
+
+    const readme = stringifyCommentDisplayParts(context, pkgDoc.readme)
+
+    const basePath = `.${getPackageDocPath(context.currentPkgName)}`
+
+    writeFileSync(`${basePath}/index.md`, [
+        "---",
+        `sidebar_label: '${context.currentPkgName} v${pkgVersion}'`,
+        "sidebar_position: 1",
+        `custom_edit_url: https://github.com/HeliosLang/${context.currentPkgName}/blob/main/README.md`,
+        `pagination_prev: ${getPaginationPrev(context.currentPkgName)}`,
+        `pagination_next: ${getPaginationNext(context.currentPkgName)}`,
+        "---",
+        readme
+    ].join("\n"))
+
+    for (let child of pkgDoc.children) {
+        writeSymbolDoc(context, child)
+    }
+}
+
+/**
+ * @param {string} pkgName 
+ * @returns {ProjectReflection}
+ */
+function readPkgDoc(pkgName) {
+    const basePath = `.${getPackageDocPath(pkgName)}`
+
+    /**
+     * @type {ProjectReflection}
+     */
+    const pkgDoc = JSON.parse(readFileSync(`${basePath}/_typedoc_.json`).toString())
+
+    return pkgDoc
 }
 
 /** 
@@ -89,66 +164,37 @@ function getPaginationNext(pkgName) {
     }
 }
 
-/**
- * @param {string} pkgName 
- */
-function writePackageDocs(pkgName) {
-    const basePath = `.${getPackageDocPath(pkgName)}`
-
-    /**
-     * @type {ProjectReflection}
-     */
-    const pkgDoc = JSON.parse(readFileSync(`${basePath}/_typedoc_.json`).toString())
-
-    const pkgVersion = getHeliosPackageVersion(pkgName)
-
-    const readme = stringifyCommentDisplayParts(pkgName, pkgDoc.readme)
-    writeFileSync(`${basePath}/index.md`, [
-        "---",
-        `sidebar_label: '${pkgName} v${pkgVersion}'`,
-        "sidebar_position: 1",
-        `custom_edit_url: https://github.com/HeliosLang/${pkgName}/blob/main/README.md`,
-        `pagination_prev: ${getPaginationPrev(pkgName)}`,
-        `pagination_next: ${getPaginationNext(pkgName)}`,
-        "---",
-        readme
-    ].join("\n"))
-
-    for (let child of pkgDoc.children) {
-        writeSymbolDoc(pkgName, child)
-    }
-}
 
 /**
- * @param {string} pkgName
+ * @param {Context} context 
  * @param {DeclarationReflection} child
  */
-function writeSymbolDoc(pkgName, child) {
+function writeSymbolDoc(context, child) {
     switch (child.variant) {
         case "declaration":
             switch(child.kind) {
                 case 4:
-                    writeNamespaceDoc(pkgName, child)
+                    writeNamespaceDoc(context, child)
                     return
                 case 32:
-                    writeConstantDoc(pkgName, child)
+                    writeConstantDoc(context, child)
                     return
                 case 64:
-                    writeFunctionDoc(pkgName, child)
+                    writeFunctionDoc(context, child)
                     return
                 case 128:
-                    writeClassDoc(pkgName, child)
+                    writeClassDoc(context, child)
                     return
                 case 256:
-                    writeInterfaceDoc(pkgName, child)
+                    writeInterfaceDoc(context, child)
                     return
                 case 2097152:
-                    writeTypeAliasDoc(pkgName, child)
+                    writeTypeAliasDoc(context, child)
                     return
             }
     }
 
-    writeGenericSymbolDoc(pkgName, child)
+    writeGenericSymbolDoc(context, child)
 }
 
 /**
@@ -158,6 +204,10 @@ function writeSymbolDoc(pkgName, child) {
  */
 function getCommonSymbolInfo(pkgName, child) {
     const name = child.name
+
+    if (name.includes("buildUnsafe")) {
+        console.log(child);
+    }
 
     const symbolPath = getSymbolDocPath(pkgName, name)
 
@@ -171,14 +221,14 @@ function getCommonSymbolInfo(pkgName, child) {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context
  * @param {DeclarationReflection} child 
  */
-function writeConstantDoc(pkgName, child) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, child)
+function writeConstantDoc(context, child) {
+    const {name, path, site} = getCommonSymbolInfo(context.currentPkgName, child)
 
-    const comment = stringifyComment(pkgName, child.comment)
-    const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
+    const comment = stringifyComment(context, child.comment)
+    const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(context, child.type) : " = " + child.defaultValue}</CodeBlock>` 
 
     const content = [
         `# <span className="constant_badge">${name}</span>`,
@@ -194,7 +244,7 @@ function writeConstantDoc(pkgName, child) {
         `title: ${name}`,
         `sidebar_label: ${name}`,
         `sidebar_class_name: constant_badge`,
-        `custom_edit_url: ${getSymbolEditLink(pkgName, site)}`,
+        `custom_edit_url: ${getSymbolEditLink(context.currentPkgName, site)}`,
         "---",
         "",
         "import CodeBlock from '@theme/CodeBlock'",
@@ -204,11 +254,11 @@ function writeConstantDoc(pkgName, child) {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context
  * @param {DeclarationReflection} child 
  */
-function writeFunctionDoc(pkgName, child) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, child)
+function writeFunctionDoc(context, child) {
+    const {name, path, site} = getCommonSymbolInfo(context.currentPkgName, child)
 
     const content = [
         `# <span className="function_badge">${name}</span>`,
@@ -225,13 +275,13 @@ function writeFunctionDoc(pkgName, child) {
             content.push(`\n## Overload ${i+1}`)
         }
 
-        const returnType = stringifyType(pkgName, overload.type)
+        const returnType = stringifyType(context, overload.type)
         const parameters = overload.parameters ?? []
         const typeParams = overload.typeParameters ?? []
-        const typeSnippet = `\n<CodeBlock className="language-ts">export function ${name}${stringifyTypeParams(pkgName, overload.typeParameters)}(${stringifyFunctionParams(pkgName, parameters)}): ${returnType}</CodeBlock>`
+        const typeSnippet = `\n<CodeBlock className="language-ts">export function ${name}${stringifyTypeParams(context, overload.typeParameters)}(${stringifyFunctionParams(context, parameters)}): ${returnType}</CodeBlock>`
         content.push(typeSnippet)
 
-        const comment = stringifyComment(pkgName, overload.comment)
+        const comment = stringifyComment(context, overload.comment)
         content.push("\n" + comment)
 
         if (typeParams.length > 0) {
@@ -240,10 +290,10 @@ function writeFunctionDoc(pkgName, child) {
             for (let p of typeParams) {
                 content.push(`\n${sectionPrefix}# \`${p.name}\``)
 
-                const typeSnippet = stringifyTypeParam(pkgName, p, true)
+                const typeSnippet = stringifyTypeParam(context, p, true)
                 content.push(`\n<CodeBlock className="language-ts">${typeSnippet}</CodeBlock>`)
 
-                const comment = stringifyComment(pkgName, p.comment)
+                const comment = stringifyComment(context, p.comment)
                 if (comment != "")
                 content.push("\n" + comment)
             }
@@ -257,12 +307,12 @@ function writeFunctionDoc(pkgName, child) {
             for (let i = 0; i < parameters.length; i++) {
                 const p = parameters[i]
                 const pName = p.name
-                const pType = stringifyType(pkgName, p.type)
+                const pType = stringifyType(context, p.type)
 
                 content.push(`\n#${sectionPrefix} ${i+1}. \`${pName}\``)
                 //const pTypeLines = pType.split("\n")
                 content.push(`\n<CodeBlock className="language-ts">${pName}${p.flags.isOptional ? "?" : ""}: ${pType}</CodeBlock>`)
-                const pDescription = stringifyComment(pkgName, p.comment)
+                const pDescription = stringifyComment(context, p.comment)
                 content.push(pDescription)
                 //const pDescriptionLines = pDescription.split("\n")
 
@@ -280,7 +330,7 @@ function writeFunctionDoc(pkgName, child) {
         
         content.push(`\n${sectionPrefix} Returns\n`)
         content.push(`<CodeBlock className="language-ts">${returnType}</CodeBlock>\n`)
-        const returnValueComment = stringifyCommentDisplayParts(pkgName, overload.comment?.blockTags?.find(bt => bt.tag == "@returns")?.content)
+        const returnValueComment = stringifyCommentDisplayParts(context, overload.comment?.blockTags?.find(bt => bt.tag == "@returns")?.content)
         if (returnValueComment != "") {
             content.push(returnValueComment + "\n")
         }
@@ -292,7 +342,7 @@ function writeFunctionDoc(pkgName, child) {
         `title: ${name}`,
         `sidebar_label: ${name}`,
         `sidebar_class_name: function_badge`,
-        `custom_edit_url: ${getSymbolEditLink(pkgName, site)}`,
+        `custom_edit_url: ${getSymbolEditLink(context.currentPkgName, site)}`,
         "---",
         "",
         "import CodeBlock from '@theme/CodeBlock'",
@@ -302,18 +352,18 @@ function writeFunctionDoc(pkgName, child) {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context
  * @param {DeclarationReflection} decl 
  */
-function writeInterfaceDoc(pkgName, decl) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, decl)
+function writeInterfaceDoc(context, decl) {
+    const {name, path, site} = getCommonSymbolInfo(context.currentPkgName, decl)
 
     // generate the typeSnippet
     /**
      * @type {string[]}
      */
     const typeSnippet = [
-        `<CodeBlock className="language-ts">export interface ${name}${stringifyTypeParams(pkgName, decl.typeParameters)} \\{`
+        `<CodeBlock className="language-ts">export interface ${name}${stringifyTypeParams(context, decl.typeParameters)} \\{`
     ]
 
     const typeSnippetIndent = TAB
@@ -321,12 +371,12 @@ function writeInterfaceDoc(pkgName, decl) {
     for (let attr of decl.children) {
         const name = attr.name
 
-        typeSnippet.push(`${typeSnippetIndent}[${name}](#${name.toLowerCase()})${stringifyMaybeFunctionTypeProperty(pkgName, attr, typeSnippetIndent)}`)
+        typeSnippet.push(`${typeSnippetIndent}[${name}](#${name.toLowerCase()})${stringifyMaybeFunctionTypeProperty(context, attr, typeSnippetIndent)}`)
     }
 
     typeSnippet.push('\\}</CodeBlock>')
 
-    const comment = stringifyComment(pkgName, decl.comment)
+    const comment = stringifyComment(context, decl.comment)
 
     const content = [
         `# <span className="interface_badge">${name}</span>`,
@@ -341,8 +391,8 @@ function writeInterfaceDoc(pkgName, decl) {
     // write a snippet each attribute
     for (let attr of decl.children) {
         const name = attr.name
-        const attrType = stringifyMaybeFunctionInterfaceProperty(pkgName, attr)
-        const attrComment = stringifyComment(pkgName, attr.comment)
+        const attrType = stringifyMaybeFunctionInterfaceProperty(context, attr)
+        const attrComment = stringifyComment(context, attr.comment)
 
         content.push([
             `### \`${name}\``,
@@ -359,7 +409,7 @@ function writeInterfaceDoc(pkgName, decl) {
         `title: ${name}`,
         `sidebar_label: ${name}`,
         `sidebar_class_name: interface_badge`,
-        `custom_edit_url: ${getSymbolEditLink(pkgName, site)}`,
+        `custom_edit_url: ${getSymbolEditLink(context.currentPkgName, site)}`,
         "---",
         "",
         "import CodeBlock from '@theme/CodeBlock'",
@@ -369,14 +419,14 @@ function writeInterfaceDoc(pkgName, decl) {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context
  * @param {DeclarationReflection} child 
  */
-function writeNamespaceDoc(pkgName, child) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, child)
+function writeNamespaceDoc(context, child) {
+    const {name, path, site} = getCommonSymbolInfo(context.currentPkgName, child)
 
-    //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
-    const comment = stringifyComment(pkgName, child.comment)
+    //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(context, child.type) : " = " + child.defaultValue}</CodeBlock>` 
+    const comment = stringifyComment(context, child.comment)
 
     const content = [
         `# <span className="namespace_badge">${name}</span>`,
@@ -390,7 +440,7 @@ function writeNamespaceDoc(pkgName, child) {
         `title: ${name}`,
         `sidebar_label: ${name}`,
         `sidebar_class_name: namespace_badge`,
-        `custom_edit_url: ${getSymbolEditLink(pkgName, site)}`,
+        `custom_edit_url: ${getSymbolEditLink(context.currentPkgName, site)}`,
         "---",
         "",
         "import CodeBlock from '@theme/CodeBlock'",
@@ -400,14 +450,14 @@ function writeNamespaceDoc(pkgName, child) {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context
  * @param {DeclarationReflection} child 
  */
-function writeClassDoc(pkgName, child) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, child)
+function writeClassDoc(context, child) {
+    const {name, path, site} = getCommonSymbolInfo(context.currentPkgName, child)
 
-    //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(pkgName, child.type) : " = " + child.defaultValue}</CodeBlock>` 
-    const comment = stringifyComment(pkgName, child.comment)
+    //const typeSnippet = `<CodeBlock className="language-ts">export const ${name}${child.defaultValue == "..." ? ": " + stringifyType(context, child.type) : " = " + child.defaultValue}</CodeBlock>` 
+    const comment = stringifyComment(context, child.comment)
 
     const content = [
         `# <span className="class_badge">${name}</span>`,
@@ -421,7 +471,7 @@ function writeClassDoc(pkgName, child) {
         `title: ${name}`,
         `sidebar_label: ${name}`,
         `sidebar_class_name: class_badge`,
-        `custom_edit_url: ${getSymbolEditLink(pkgName, site)}`,
+        `custom_edit_url: ${getSymbolEditLink(context.currentPkgName, site)}`,
         "---",
         "",
         "import CodeBlock from '@theme/CodeBlock'",
@@ -431,15 +481,15 @@ function writeClassDoc(pkgName, child) {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context
  * @param {DeclarationReflection} decl 
  */
-function writeTypeAliasDoc(pkgName, decl) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, decl)
+function writeTypeAliasDoc(context, decl) {
+    const {name, path, site} = getCommonSymbolInfo(context.currentPkgName, decl)
 
     const beforeType = (decl.type?.type == "union" && decl.type?.types?.length > 2) ? `\n${TAB}| ` : ""
-    const typeSnippet = `<CodeBlock className="language-ts">export type ${name}${stringifyTypeParams(pkgName, decl.typeParameters)} = ${beforeType}${stringifyType(pkgName, decl.type)}</CodeBlock>` 
-    const comment = stringifyComment(pkgName, decl.comment)
+    const typeSnippet = `<CodeBlock className="language-ts">export type ${name}${stringifyTypeParams(context, decl.typeParameters)} = ${beforeType}${stringifyType(context, decl.type)}</CodeBlock>` 
+    const comment = stringifyComment(context, decl.comment)
 
     const content = [
         `# <span className="type_badge">${name}</span>`,
@@ -456,7 +506,7 @@ function writeTypeAliasDoc(pkgName, decl) {
         `title: ${name}`,
         `sidebar_label: ${name}`,
         `sidebar_class_name: type_badge`,
-        `custom_edit_url: ${getSymbolEditLink(pkgName, site)}`,
+        `custom_edit_url: ${getSymbolEditLink(context.currentPkgName, site)}`,
         "---",
         "",
         "import CodeBlock from '@theme/CodeBlock'",
@@ -466,64 +516,64 @@ function writeTypeAliasDoc(pkgName, decl) {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {ParameterReflection[]} params 
  * @param {string} indent
  * @returns {string}
  */
-function stringifyFunctionParams(pkgName, params, indent = "") {
+function stringifyFunctionParams(context, params, indent = "") {
     if (params.length == 0) {
         return ""
     } else if (params.length == 1) {
-        return `${params[0].name}${params[0].flags?.isOptional ? "?" : ""}: ${stringifyType(pkgName, params[0].type, indent)}`
+        return `${params[0].name}${params[0].flags?.isOptional ? "?" : ""}: ${stringifyType(context, params[0].type, indent)}`
     } else {
         const innerIndent = `${indent}${TAB}`
-        return "\n" + innerIndent + params.map(p => `${p.name}${p.flags?.isOptional ? "?" : ""}: ${stringifyType(pkgName, p.type, innerIndent)}`).join(",\n" + innerIndent) + "\n" + indent
+        return "\n" + innerIndent + params.map(p => `${p.name}${p.flags?.isOptional ? "?" : ""}: ${stringifyType(context, p.type, innerIndent)}`).join(",\n" + innerIndent) + "\n" + indent
     }
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {DeclarationReflection} decl
  * @param {string} indent 
  * @returns {string}
  */
-function stringifyMaybeFunctionInterfaceProperty(pkgName, decl, indent = "") {
+function stringifyMaybeFunctionInterfaceProperty(context, decl, indent = "") {
     const t = decl.type
     const isOptional = decl.flags.isOptional
 
     if (t && t.type == "reflection" && !isOptional) {
-        return stringifyMaybeFunctionTypeProperty(pkgName, t.declaration, indent)
+        return stringifyMaybeFunctionTypeProperty(context, t.declaration, indent)
     } else {
-        return `${isOptional ? "?" : ""}: ${stringifyType(pkgName, t, indent)}`
+        return `${isOptional ? "?" : ""}: ${stringifyType(context, t, indent)}`
     }
 }
 
 /**
- * @param {string} pkgName
+ * @param {Context} context
  * @param {SomeType | undefined} t 
  * @param {string} indent
  * @returns {string}
  */
-function stringifyType(pkgName, t, indent = "") {
+function stringifyType(context, t, indent = "") {
     if (!t) {
         return "unknown"
     } else {
         switch(t.type) {
             case "array":
-                return `${stringifyType(pkgName, t.elementType, indent)}[]`
+                return `${stringifyType(context, t.elementType, indent)}[]`
             case "unknown":
             case "intrinsic":
                 return t.name
             case "predicate":
-                return `${t.asserts ? "asserts " : ""}${t.name} is ${stringifyType(pkgName, t.targetType, indent)}`
+                return `${t.asserts ? "asserts " : ""}${t.name} is ${stringifyType(context, t.targetType, indent)}`
             case "rest":
-                return `...${stringifyType(pkgName, t.elementType, indent)}`
+                return `...${stringifyType(context, t.elementType, indent)}`
             case "conditional":
                 const innerIndent = indent + TAB
-                return `${stringifyType(pkgName, t.checkType, indent)} extends ${stringifyType(pkgName, t.extendsType, indent)} \n${innerIndent}? ${stringifyType(pkgName, t.trueType, innerIndent)} \n${innerIndent}: ${stringifyType(pkgName, t.falseType, innerIndent)}`
+                return `${stringifyType(context, t.checkType, indent)} extends ${stringifyType(context, t.extendsType, indent)} \n${innerIndent}? ${stringifyType(context, t.trueType, innerIndent)} \n${innerIndent}: ${stringifyType(context, t.falseType, innerIndent)}`
             case "reference":
-                const typeParams = t.typeArguments ? `&lt;${t.typeArguments.map(ta => stringifyType(pkgName, ta, indent)).join(", ")}>` : ""
+                const typeParams = t.typeArguments ? `&lt;${t.typeArguments.map(ta => stringifyType(context, ta, indent)).join(", ")}>` : ""
                 if (t.package == "typescript") {
                     switch(t.name) {
                         case "Uint8Array":
@@ -532,7 +582,7 @@ function stringifyType(pkgName, t, indent = "") {
                             return t.name + typeParams
                     }
                 } else if (!t.refersToTypeParameter) {
-                    const path = getSymbolDocPath(t.package ?? pkgName, t.name)
+                    const path = getSymbolDocPath(t.package ?? context.currentPkgName, t.name)
                     return `[${t.name}](${path})` + typeParams
                 } else {
                     return t.name + typeParams
@@ -552,32 +602,32 @@ function stringifyType(pkgName, t, indent = "") {
 
                     return `\\{${afterOpenBrace}${children.map(ct => {
                         const key = `${ct.name}${ct.flags.isOptional ? "?" : ""}`
-                        return `${key}${stringifyMaybeFunctionTypeProperty(pkgName, ct, innerIndent)}`
+                        return `${key}${stringifyMaybeFunctionTypeProperty(context, ct, innerIndent)}`
                     }).concat(indexSignatures.map(is => {
                         const params = is.parameters ?? []
-                        const key = `&lsqb;${params.map(p => `${p.name}: ${stringifyType(pkgName, p.type, indent)}`).join(", ")}&rsqb;`
-                        return `${key}: ${stringifyType(pkgName, is.type, indent)}`
+                        const key = `&lsqb;${params.map(p => `${p.name}: ${stringifyType(context, p.type, indent)}`).join(", ")}&rsqb;`
+                        return `${key}: ${stringifyType(context, is.type, indent)}`
                     })).join(separator)}${beforeCloseBrace}\\}`
                 } else if (t.declaration.signatures && t.declaration.signatures.length == 1 && t.declaration.signatures[0].kind == 16384) {
-                    return stringifyConstructorSignature(pkgName, t.declaration.signatures[0], indent)
+                    return stringifyConstructorSignature(context, t.declaration.signatures[0], indent)
                  } else {
-                    return stringifyFunctionSignatures(pkgName, t.declaration.signatures, indent)
+                    return stringifyFunctionSignatures(context, t.declaration.signatures, indent)
                 }
             case "union":
                 if (t.types.length <= 2) {
-                    return t.types.map(ut => stringifyType(pkgName, ut, indent)).join(" | ")
+                    return t.types.map(ut => stringifyType(context, ut, indent)).join(" | ")
                 } else {
                     const innerIndent = indent + TAB
-                    return t.types.map(ut => stringifyType(pkgName, ut, innerIndent)).join(`\n${innerIndent}| `)
+                    return t.types.map(ut => stringifyType(context, ut, innerIndent)).join(`\n${innerIndent}| `)
                 }
             case "intersection":
-                return t.types.map(it => stringifyType(pkgName, it, indent)).join(" & ")
+                return t.types.map(it => stringifyType(context, it, indent)).join(" & ")
             case "typeOperator":
-                return `${t.operator} ${stringifyType(pkgName, t.target, indent)}`
+                return `${t.operator} ${stringifyType(context, t.target, indent)}`
             case "mapped": 
-                return `\\{&lsqb;${t.parameter} in ${stringifyType(pkgName, t.parameterType, indent)}&rsqb;: ${stringifyType(pkgName, t.templateType, indent)}\\}`
+                return `\\{&lsqb;${t.parameter} in ${stringifyType(context, t.parameterType, indent)}&rsqb;: ${stringifyType(context, t.templateType, indent)}\\}`
             case "indexedAccess":
-                return `${stringifyType(pkgName, t.objectType, indent)}&lsqb;${stringifyType(pkgName, t.indexType, indent)}&rsqb;`
+                return `${stringifyType(context, t.objectType, indent)}&lsqb;${stringifyType(context, t.indexType, indent)}&rsqb;`
             case "literal":
                 if (typeof t.value == "string") {
                     return `"${t.value.replaceAll("{", "\\{")}"`
@@ -585,7 +635,7 @@ function stringifyType(pkgName, t, indent = "") {
                     return t.value
                 }
             case "tuple":
-                const parts = (t.elements ?? []).map(et => stringifyType(pkgName, et, indent))
+                const parts = (t.elements ?? []).map(et => stringifyType(context, et, indent))
 
                 return joinGroup("&lsqb;", parts, "&rsqb;", indent)
             default: 
@@ -595,71 +645,71 @@ function stringifyType(pkgName, t, indent = "") {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {DeclarationReflection} decl 
  * @param {string} indent 
  * @returns {string}
  */
-function stringifyMaybeFunctionTypeProperty(pkgName, decl, indent = "") {
+function stringifyMaybeFunctionTypeProperty(context, decl, indent = "") {
     const funcSignatures = decl.signatures && decl.signatures.length > 0 ? decl.signatures : (decl.type && decl.type.type == "reflection" && decl.type.declaration.signatures) ? decl.type.declaration.signatures : undefined
     const isOptional = decl.flags.isOptional
     const isFunction = !isOptional && (funcSignatures && funcSignatures.length > 0)
     const value =  isFunction ? 
-        stringifyFunctionSignatures(pkgName, funcSignatures, indent, ": "): 
+        stringifyFunctionSignatures(context, funcSignatures, indent, ": "): 
         decl.type ? 
-            stringifyType(pkgName, decl.type, indent) : 
+            stringifyType(context, decl.type, indent) : 
             "unknown"
     return `${isFunction ? "" : (isOptional ? "?: " : ": ")}${value}`
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {undefined | SignatureReflection[]} signatures 
  * @param {string} [indent]
  * @param {string} [arrow]
  * @returns {string}
  */
-function stringifyFunctionSignatures(pkgName, signatures, indent = "", arrow = " => ") {
+function stringifyFunctionSignatures(context, signatures, indent = "", arrow = " => ") {
     if (signatures && signatures.length > 0) {
         const signature = signatures[0]
 
-        return stringifyFunctionSignature(pkgName, signature, indent, arrow)
+        return stringifyFunctionSignature(context, signature, indent, arrow)
     } else {
         return "unknown"
     }
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {SignatureReflection} signature 
  * @param {string} [indent]
  * @returns {string}
  */
-function stringifyConstructorSignature(pkgName, signature, indent = "") {
+function stringifyConstructorSignature(context, signature, indent = "") {
     const innerIndent = indent + TAB
-    return `${indent}\\{\n${innerIndent}new${stringifyFunctionSignature(pkgName, signature, innerIndent, " => ")}\n${indent}\\}`
+    return `${indent}\\{\n${innerIndent}new${stringifyFunctionSignature(context, signature, innerIndent, " => ")}\n${indent}\\}`
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {SignatureReflection} signature 
  * @param {string} [indent]
  * @param {string} [arrow]
  * @returns {string}
  */
-function stringifyFunctionSignature(pkgName, signature, indent = "", arrow = " => ") {
-    return `${stringifyTypeParams(pkgName, signature.typeParameters, indent)}(${stringifyFunctionParams(pkgName, signature.parameters ?? [], indent)})${arrow}${stringifyType(pkgName, signature.type, indent)}`
+function stringifyFunctionSignature(context, signature, indent = "", arrow = " => ") {
+    return `${stringifyTypeParams(context, signature.typeParameters, indent)}(${stringifyFunctionParams(context, signature.parameters ?? [], indent)})${arrow}${stringifyType(context, signature.type, indent)}`
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {TypeParameterReflection[] | undefined} typeParams 
  * @param {string} [indent]
  * @returns {string}
  */
-function stringifyTypeParams(pkgName, typeParams, indent = "") {
+function stringifyTypeParams(context, typeParams, indent = "") {
     if (typeParams && typeParams.length > 0) {
-        const parts = typeParams.map(tp => stringifyTypeParam(pkgName, tp, false, indent))
+        const parts = typeParams.map(tp => stringifyTypeParam(context, tp, false, indent))
 
         return joinGroup("&lt;", parts, "&gt;", indent)
     } else {
@@ -684,32 +734,32 @@ function joinGroup(open, parts, close, indent = "", separator = ",") {
 }
 
 /**
- * @param {string} pkgName 
+ * @param {Context} context 
  * @param {TypeParameterReflection} typeParam 
  * @param {boolean} [extendsAny]
  * @param {string} indent
  * @returns {string} 
  */
-function stringifyTypeParam(pkgName, typeParam, extendsAny = false, indent = "") {
-    const ext = typeParam.type ? ` extends ${stringifyType(pkgName, typeParam.type, indent)}` : extendsAny ? " extends any" : ""
-    const def = typeParam.default ? `${(ext == "" ? "=" : " = ")}${stringifyType(pkgName, typeParam.default, indent)}` : ""
+function stringifyTypeParam(context, typeParam, extendsAny = false, indent = "") {
+    const ext = typeParam.type ? ` extends ${stringifyType(context, typeParam.type, indent)}` : extendsAny ? " extends any" : ""
+    const def = typeParam.default ? `${(ext == "" ? "=" : " = ")}${stringifyType(context, typeParam.default, indent)}` : ""
 
     return `${typeParam.name}${ext}${def}`
 }
 
 /**
- * @param {string} pkgName
+ * @param {Context} context
  * @param {DeclarationReflection} child 
  */
-function writeGenericSymbolDoc(pkgName, child) {
-    const {name, path, site} = getCommonSymbolInfo(pkgName, child)
+function writeGenericSymbolDoc(context, child) {
+    const {name, path, site} = getCommonSymbolInfo(context.currentPkgName, child)
 
-    let content = stringifyComment(pkgName, child.comment)
+    let content = stringifyComment(context, child.comment)
 
     writeFileSync(`.${path}.md`, [
         "---",
         `sidebar_label: ${name}`,
-        `custom_edit_url: ${getSymbolEditLink(pkgName, site)}`,
+        `custom_edit_url: ${getSymbolEditLink(context.currentPkgName, site)}`,
         "---",
         `# ${name}`,
         content
@@ -748,11 +798,24 @@ function getHeliosPackageVersion(pkgName) {
 }
 
 /**
- * @param {string} pkgName
+ * @param {Context} context
+ * @param {undefined | Comment} comment 
+ * @returns {string}
+ */
+function stringifyComment(context, comment) {
+    if (!comment) {
+        return ""
+    } else {
+        return stringifyCommentDisplayParts(context, comment.summary)
+    }
+}
+
+/**
+ * @param {Context} context
  * @param {undefined | CommentDisplayPart[]} parts 
  * @returns {string}
  */
-function stringifyCommentDisplayParts(pkgName, parts) {
+function stringifyCommentDisplayParts(context, parts) {
     let s = (parts ?? []).map(p => {
         if (p.kind == "text") {
             // escape `<` to avoid problems with mdx format
@@ -760,7 +823,7 @@ function stringifyCommentDisplayParts(pkgName, parts) {
         } else if (p.kind == "code") {
             return p.text
         } else if (p.kind == "inline-tag") {
-            return `[${p.text}](${getSymbolDocPath(pkgName, p.text)})`
+            return stringifyInlineTag(context, p)
         } else {
             throw new Error(`comment display kind ${p.kind} unhandled`)
         }
@@ -770,16 +833,35 @@ function stringifyCommentDisplayParts(pkgName, parts) {
 }
 
 /**
- * @param {string} pkgName
- * @param {undefined | Comment} comment 
+ * @param {Context} context 
+ * @param {InlineTagDisplayPart} part 
  * @returns {string}
  */
-function stringifyComment(pkgName, comment) {
-    if (!comment) {
-        return ""
-    } else {
-        return stringifyCommentDisplayParts(pkgName, comment.summary)
+function stringifyInlineTag(context, part) {
+    if (part.tag != "@link") {
+        throw new Error(`${part.tag} inline-tag unhandled`)
     }
+
+    let [href, text] = part.text.split("|")
+    text = text ?? href
+
+    let pkgName = context.currentPkgName;
+
+    if (!href.startsWith("http") && !href.includes("://")) {
+        const [topLevelName, member] = href.split(".")
+
+        if (topLevelName in context.topLevelSymbolsPkgs) {
+            pkgName = context.topLevelSymbolsPkgs[topLevelName]
+        }
+
+        href = getSymbolDocPath(pkgName, topLevelName)
+
+        if (member) {
+            href = `${href}#${member.toLowerCase()}`
+        }
+    }
+
+    return `[${text}](${href})`
 }
 
 main()
