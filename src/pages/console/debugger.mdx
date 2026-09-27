@@ -1,0 +1,15 @@
+---
+title: Debugger console
+description: Manage API keys for the Helios debugger
+---
+
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import DebuggerConsole from '@site/src/components/DebuggerConsole';
+
+# Debugger console
+
+Connect your wallet to manage debugger API keys. Each key can upload captures and read its own feed. Keep keys private; keys shipped in browser applications are visible to their users.
+
+<BrowserOnly fallback={<p>Enable JavaScript to connect your wallet.</p>}>
+  {() => <DebuggerConsole />}
+</BrowserOnly>

@@ -8,17 +8,15 @@ import rehypeKatex from 'rehype-katex';
 
 const config: Config = {
   title: 'Helios',
+  customFields: {debuggerApiUrl: process.env.DEBUGGER_API_URL ?? 'https://debugger.helios-lang.io'},
   tagline: 'Cardano smart contract DSL and JS/TS SDK',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
   url: 'https://helios-lang.io',
   // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
   organizationName: 'HeliosLang', // Usually your GitHub org/user name.
   projectName: 'docs', // Usually your repo name.
 
@@ -70,6 +68,7 @@ const config: Config = {
         src: 'img/logo.png',
       },
       items: [
+        {to: '/console/debugger', label: 'Debugger', position: 'right'},
         {
           type: 'docSidebar',
           sidebarId: 'learnSidebar',

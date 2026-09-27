@@ -19,7 +19,6 @@
     "build:sdk:type-utils": "typedoc node_modules/@helios-lang/type-utils/src/index.js --tsconfig ./jsconfig.json --json ./docs/sdk/plumbing/type-utils/_typedoc_.json",
     "build:sdk:uplc": "typedoc node_modules/@helios-lang/uplc/src/index.js --tsconfig ./jsconfig.json --json ./docs/sdk/uplc/_typedoc_.json",
     "clear": "docusaurus clear",
-    "deploy": "docusaurus deploy",
     "docusaurus": "docusaurus",
     "serve": "docusaurus serve",
     "start": "docusaurus start",

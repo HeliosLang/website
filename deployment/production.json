@@ -1,0 +1,8 @@
+{
+  "worker": "helios-debugger",
+  "database": "helios-debugger",
+  "bucket": "helios-debugger-captures",
+  "apiHost": "debugger.helios-lang.io",
+  "websiteOrigin": "https://helios-lang.io",
+  "pagesProject": "helioslangplatform"
+}

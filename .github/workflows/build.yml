@@ -1,57 +1,90 @@
-name: Build and publish the Helios website
-
+name: Check and deploy Helios
 on:
-    push:
-        branches:
-            - main
-
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 permissions:
-    contents: read
-    pages: write
-    id-token: write
-
+  contents: read
+concurrency:
+  group: helios-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: false
 jobs:
-    build:
-        runs-on: ubuntu-latest
-
-        strategy:
-            matrix:
-                node-version: [20.x]
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  fetch-tags: true
-
-            - name: Preinstall PNPM
-              run: npm i -g pnpm@9.9.0
-
-            - name: Detect package manager
-              id: detect-package-manager
-              run: |
-                  echo "manager=pnpm" >> $GITHUB_OUTPUT
-                  echo "command=install" >> $GITHUB_OUTPUT
-                  echo "runner=pnpm" >> $GITHUB_OUTPUT
-                  exit 0
-
-            - name: Install deps with package manager
-              run: ${{ steps.detect-package-manager.outputs.runner }} ${{ steps.detect-package-manager.outputs.command }}
-
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v3
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: ${{ steps.detect-package-manager.outputs.manager }}
-
-            - name: Build docusaurus site
-              run: pnpm run build
-
-            - name: Upload artifacts
-              uses: actions/upload-pages-artifact@v3
-              with:
-                  path: "./dist"
-
-            - name: Deploy page
-              id: deployment
-              uses: actions/deploy-pages@v4
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: website
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.0'
+      - run: npm install -g pnpm@10.20.0
+      - run: pnpm --dir website install --frozen-lockfile --ignore-scripts
+      - run: pnpm --dir website/services/debugger install --frozen-lockfile --ignore-scripts
+      - run: pnpm --dir website/services/debugger test
+      - run: pnpm --dir website/services/debugger test:runtime
+      - run: pnpm --dir website/services/debugger check
+      - run: node --test website/test/provision.test.mjs
+      - run: pnpm --dir website typecheck
+      - run: pnpm --dir website build
+        env:
+          DEBUGGER_API_URL: https://debugger.helios-lang.io
+      - run: node website/scripts/check-public-artifacts.mjs website/dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-dist
+          path: website/dist
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: cloudflare
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: website
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.0'
+      - run: npm install -g pnpm@10.20.0
+      - run: pnpm --dir website/services/debugger install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: website-dist
+          path: website/dist
+      - name: Ensure Pages project, D1 and private R2 resources
+        id: provision
+        run: node website/scripts/provision-debugger.mjs website/deployment/production.json website/services/debugger/wrangler.deploy.json
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Migrate and deploy backend
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: website/services/debugger
+          wranglerVersion: '4.40.2'
+          command: |
+            d1 migrations apply DB --remote --config wrangler.deploy.json
+            deploy --config wrangler.deploy.json
+      - name: Verify backend before frontend deployment
+        run: node website/scripts/smoke-debugger.mjs "$DEBUGGER_API_URL"
+        env:
+          DEBUGGER_API_URL: https://debugger.helios-lang.io
+      - name: Upload production Pages project
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: website/services/debugger
+          wranglerVersion: '4.40.2'
+          command: pages deploy ../../dist --project-name=${{ steps.provision.outputs.pagesProject }} --branch=main
+      - name: Smoke test and revisions
+        run: |
+          node website/scripts/smoke-debugger.mjs "$DEBUGGER_API_URL" "$WEBSITE_ORIGIN"
+          echo "Website and backend: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          DEBUGGER_API_URL: https://debugger.helios-lang.io
+          WEBSITE_ORIGIN: https://helios-lang.io

@@ -16,3 +16,6 @@ docs/sdk/plumbing/era
 docs/sdk/plumbing/ir
 docs/sdk/plumbing/type-utils
 _typedoc_.json
+.env.local
+.env.*.local
+*.swp

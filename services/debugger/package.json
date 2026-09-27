@@ -1,0 +1,21 @@
+{
+    "name": "@helios-lang/debugger-worker",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "wrangler dev",
+        "test": "node --test test/*.test.js",
+        "check": "wrangler deploy --dry-run",
+        "types": "wrangler types",
+        "test:runtime": "wrangler deploy --dry-run --outdir .test-worker && node test/runtime.mjs"
+    },
+    "dependencies": {
+        "@helios-lang/cbor": "0.3.1",
+        "@helios-lang/codec-utils": "0.3.4",
+        "@helios-lang/ledger": "0.7.23"
+    },
+    "devDependencies": {
+        "wrangler": "4.40.2",
+        "miniflare": "4.20250924.0"
+    }
+}

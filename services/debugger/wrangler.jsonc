@@ -1,0 +1,24 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "helios-debugger-local",
+    "main": "src/index.js",
+    "compatibility_date": "2026-09-25",
+    "compatibility_flags": ["nodejs_compat"],
+    "observability": { "enabled": true },
+    "vars": {
+        "WEBSITE_ORIGIN": "http://localhost:3000",
+        "RETENTION_DAYS": "30"
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "helios-debugger-local",
+            "database_id": "00000000-0000-0000-0000-000000000000",
+            "migrations_dir": "migrations"
+        }
+    ],
+    "r2_buckets": [
+        { "binding": "PAYLOADS", "bucket_name": "helios-debugger-local" }
+    ],
+    "triggers": { "crons": ["0 * * * *"] }
+}
