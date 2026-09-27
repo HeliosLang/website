@@ -28,3 +28,15 @@ table.table { display: table; width: 100%; table-layout: fixed; border-collapse:
 .captureId { display: block; margin-top: 8px; color: var(--ifm-color-emphasis-700); }
 .failure { margin-top: 8px; color: var(--ifm-color-danger); }
 @media (max-width: 600px) { .projectHeader { align-items: flex-start; flex-wrap: wrap; } .projectHeader h1 { font-size: 1.8rem; } }
+
+.copyButton { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 32px; height: 32px; padding: 6px; border: 1px solid var(--ifm-color-emphasis-300); border-radius: 6px; background: var(--ifm-color-emphasis-100); color: var(--ifm-font-color-base); cursor: pointer; }
+.copyButton:hover { background: var(--ifm-color-emphasis-200); }
+.copyButton:focus-visible { outline: 2px solid var(--ifm-color-primary); outline-offset: 2px; }
+
+.iconButton { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 40px; width: 40px; height: 40px; padding: 8px; border: 0; border-radius: 8px; background: transparent; color: var(--ifm-font-color-base); cursor: pointer; }
+.iconButton:hover { background: var(--ifm-color-emphasis-100); }
+.iconButton:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.iconButton:disabled { opacity: .5; cursor: wait; }
+.deleteButton { color: #c62828; }
+.deleteButton:hover { background: rgb(198 40 40 / 10%); }
+:global([data-theme='dark']) .deleteButton { color: #ff8585; }

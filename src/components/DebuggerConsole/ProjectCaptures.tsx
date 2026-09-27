@@ -18,16 +18,22 @@ function validatorName(capture: Capture, evaluation: Evaluation) {
   }
   return validators.size === 1 ? [...validators][0] : 'Unknown validator';
 }
+function Timestamp({value}: {value: number}) {
+  const date = new Date(value * 1000);
+  return <time dateTime={date.toISOString()}>{date.toLocaleString()}</time>;
+}
 function Argument({value, index}: {value: string; index: number}) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   return <div className={styles.argument}>
     <span className={styles.argumentLabel}>Argument {index + 1}</span>
     <code>{value.length > 48 ? `${value.slice(0,32)}…${value.slice(-12)}` : value}</code>
-    <button type="button" className="button button--sm button--secondary" aria-label={`Copy argument ${index + 1} CBOR`} onClick={async () => {
+    <button type="button" className={styles.copyButton} title={copied ? 'Copied' : 'Copy CBOR'} aria-label={`Copy argument ${index + 1} CBOR`} onClick={async () => {
       setError('');
       try {await navigator.clipboard.writeText(value); setCopied(true);} catch {setError('Copy failed. Select the full CBOR below.');}
-    }}>{copied ? 'Copied' : 'Copy'}</button>
+    }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {copied ? <path d="m5 12 4 4L19 6"/> : <><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>}
+    </svg><span className="sr-only" role="status">{copied ? 'Copied' : ''}</span></button>
     {error && <><span role="alert">{error}</span><textarea readOnly aria-label={`Argument ${index + 1} full CBOR`} value={value}/></>}
   </div>;
 }
@@ -68,22 +74,23 @@ export default function ProjectCaptures({project, endpoint, onRevoke}: {project:
     <nav aria-label="Breadcrumb" className={styles.breadcrumb}><Link to="/console">Console</Link><span aria-hidden="true"> / </span><span>{project.name}</span></nav>
     <header className={`${styles.consoleHeader} ${styles.projectHeader}`}>
       <div><h1>{project.name}</h1><p className={styles.subtitle}>Created {new Date(project.created_at * 1000).toLocaleString()}</p></div>
-      {project.revoked ? <span className={styles.revoked}>API key revoked</span> : <button className="button button--danger" disabled={revoking} onClick={() => {
-        if (!window.confirm(`Revoke the API key for ${project.name}? Applications using it will lose access.`)) return;
+      {project.revoked ? <span className={styles.revoked}>API key revoked</span> : <button type="button" className={`${styles.iconButton} ${styles.deleteButton}`} aria-label="Delete project" title="Delete project" disabled={revoking} onClick={() => {
+        if (!window.confirm(`Delete project ${project.name}? Its API key will be revoked and applications using it will lose access.`)) return;
         setRevoking(true); setError('');
         void onRevoke().catch(e => setError(e instanceof Error ? e.message : 'Unable to revoke API key')).finally(() => setRevoking(false));
-      }}>Revoke API key</button>}
+      }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7"/></svg></button>}
     </header>
     <section aria-labelledby="captures-title">
-      <div className={styles.toolbar}><div><h2 id="captures-title">Failed capture contexts</h2><p className={styles.subtitle}>Stored validator evaluations from failed transaction builds.</p></div><button className="button button--secondary" disabled={busy} onClick={() => void load()}>Refresh</button></div>
+      <div className={styles.toolbar}><div><h2 id="captures-title">Failed capture contexts</h2><p className={styles.subtitle}>Stored validator evaluations from failed transaction builds.</p></div><button type="button" className={styles.iconButton} aria-label="Refresh captures" title="Refresh captures" disabled={busy} onClick={() => void load()}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9"/></svg></button></div>
       {error && <p role="alert" className="alert alert--danger">{error}</p>}
       {busy && <p role="status">Loading captures…</p>}
-      <table className={styles.table} aria-labelledby="captures-title"><thead><tr><th>Validator</th><th>Validator arguments (CBOR)</th></tr></thead><tbody>
+      <table className={styles.table} aria-labelledby="captures-title"><thead><tr><th scope="col">Timestamp</th><th scope="col">Validator</th><th scope="col">Arguments (CBOR)</th></tr></thead><tbody>
         {entries.flatMap(entry => entry.payload?.evaluations.length ? entry.payload.evaluations.map((evaluation, index) => <tr key={`${entry.captureId}:${index}`}>
-          <td><strong>{validatorName(entry.payload!, evaluation)}</strong><p className={styles.subtitle}>{evaluation.phase} · {new Date(entry.createdAt * 1000).toLocaleString()}</p><small className={styles.captureId}>Capture {entry.captureId}<br/>Script {evaluation.scriptHash}</small>{(evaluation.result.error || captureError(entry.payload!)) && <p className={styles.failure}>{evaluation.result.error || captureError(entry.payload!)}</p>}</td>
+          <td><Timestamp value={entry.createdAt}/></td>
+          <td><strong>{validatorName(entry.payload!, evaluation)}</strong><small className={styles.captureId}>Capture {entry.captureId}<br/>Script {evaluation.scriptHash}</small>{(evaluation.result.error || captureError(entry.payload!)) && <p className={styles.failure}>{evaluation.result.error || captureError(entry.payload!)}</p>}</td>
           <td>{evaluation.arguments.length ? evaluation.arguments.map((value, i) => <Argument key={i} value={value} index={i}/>) : 'No arguments recorded'}</td>
-        </tr>) : [<tr key={entry.captureId}><td><small>Capture {entry.captureId}</small></td><td>{entry.error ?? 'No validator evaluations recorded'}</td></tr>])}
-        {!entries.length && !busy && !error && <tr><td colSpan={2} className={styles.empty}>No failed captures yet.</td></tr>}
+        </tr>) : [<tr key={entry.captureId}><td><Timestamp value={entry.createdAt}/></td><td><small>Capture {entry.captureId}</small></td><td>{entry.error ?? 'No validator evaluations recorded'}</td></tr>])}
+        {!entries.length && !busy && !error && <tr><td colSpan={3} className={styles.empty}>No failed captures yet.</td></tr>}
       </tbody></table>
       {cursor && <button className="button button--secondary" disabled={busy} onClick={() => void load(cursor)}>Load more</button>}
     </section>

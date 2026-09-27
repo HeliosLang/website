@@ -105,10 +105,11 @@ async (page) => {
   await table.getByRole('link',{name:'Browser test',exact:true}).click();
   await page.getByRole('heading',{name:'Browser test',exact:true}).waitFor();
   await page.evaluate(()=>{window.confirm=()=>true});
-  await page.getByRole('button',{name:'Revoke API key',exact:true}).click();
+  await page.getByRole('button',{name:'Delete project',exact:true}).click();
   await page.getByText('API key revoked',{exact:true}).waitFor();
   await page.getByRole('navigation',{name:'Breadcrumb'}).getByRole('link',{name:'Console'}).click();
-  await table.getByText('Revoked',{exact:true}).waitFor();
+  await table.waitFor();
+  check(await table.getByRole('link',{name:'Browser test',exact:true}).count()===0, 'Revoked projects must be hidden');
   check(challenges===1, 'Initial connection signs once');
   check(await page.evaluate(()=>localStorage.getItem('helios.debugger.wallet'))==='eternl', 'Remember provider only');
   check(await page.evaluate(()=>!JSON.stringify(localStorage).includes('hdbg_')), 'No API key in localStorage');

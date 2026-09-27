@@ -18,6 +18,7 @@ export default function DebuggerConsole({projectPage = false}: {projectPage?: bo
   const cliLogin = new URLSearchParams(search).get('cli_login');
   const validCliLogin = cliLogin && /^[a-f0-9-]{36}$/.test(cliLogin);
   const [keys, setKeys] = useState<Key[]>([]);
+  const activeKeys = keys.filter(key => !key.revoked);
   const [connected, setConnected] = useState(false);
   const [name, setName] = useState('');
   const [secret, setSecret] = useState('');
@@ -89,15 +90,14 @@ export default function DebuggerConsole({projectPage = false}: {projectPage?: bo
       {secret && <div className="alert alert--warning margin-top--md"><p>Copy this API key now, or install it later using helios login.</p><code style={{overflowWrap:'anywhere'}}>{secret}</code><p><button onClick={() => setSecret('')}>Dismiss secret</button></p></div>}
       <div className={styles.toolbar}>
         <div><h2 id="projects-title">Projects</h2><p className={styles.subtitle}>Manager your Debugger API keys</p></div>
-        {keys.length > 0 && <button className="button button--primary" disabled={busy} onClick={openCreate}>New project</button>}
+        {activeKeys.length > 0 && <button className="button button--primary" disabled={busy} onClick={openCreate}>New project</button>}
       </div>
       <table className={styles.table} aria-labelledby="projects-title">
         <thead><tr><th scope="col">Name</th><th scope="col">Creation time</th></tr></thead>
-        <tbody>{keys.length === 0 ? <tr><td colSpan={2} className={styles.empty}>
+        <tbody>{activeKeys.length === 0 ? <tr><td colSpan={2} className={styles.empty}>
           <button className="button button--primary" disabled={busy} onClick={openCreate}>Create project</button>
-        </td></tr> : keys.map(key => <tr key={key.id}>
-          <td><Link className={styles.projectName} to={`/console/project?id=${encodeURIComponent(key.id)}`}>{key.name}</Link>
-            {!!key.revoked && <span className={styles.revoked}>Revoked</span>}</td>
+        </td></tr> : activeKeys.map(key => <tr key={key.id}>
+          <td><Link className={styles.projectName} to={`/console/project?id=${encodeURIComponent(key.id)}`}>{key.name}</Link></td>
           <td>{creationTime(key)}</td>
         </tr>)}</tbody>
       </table>

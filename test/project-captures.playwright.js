@@ -20,6 +20,9 @@ async (page) => {
   await page.getByRole('heading',{name:'catalyst_time_lock',exact:true}).waitFor();
   const table=page.getByRole('table',{name:'Failed capture contexts'});
   await table.getByText('time_lock',{exact:true}).waitFor();
+  check(await table.getByRole('columnheader').first().innerText()==='Timestamp', 'Timestamp must be first column');
+  check(!(await table.innerText()).includes('construction'), 'No construction prefix');
+  check(await table.getByRole('button',{name:'Copy argument 1 CBOR'}).locator('svg').count()===1, 'Copy uses an icon');
   await table.getByRole('button',{name:'Copy argument 1 CBOR'}).click();
   check(await page.evaluate(()=>window.__copiedCbor)===cbor,'Copy must use full unabridged CBOR');
   check(!(await table.innerText()).includes(cbor),'Long CBOR must be abbreviated');
@@ -31,7 +34,7 @@ async (page) => {
   await page.setViewportSize({width:1280,height:900});
   await page.screenshot({path:'output/playwright/project-captures-desktop.png',fullPage:true});
   await page.evaluate(()=>{window.confirm=()=>true});
-  await page.getByRole('button',{name:'Revoke API key'}).click();
+  await page.getByRole('button',{name:'Delete project'}).click();
   await page.getByText('API key revoked',{exact:true}).waitFor();
   check(revoked,'Revoke request');
   await page.getByRole('navigation',{name:'Breadcrumb'}).getByRole('link',{name:'Console'}).click();
