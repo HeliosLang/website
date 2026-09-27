@@ -26,8 +26,7 @@ function Argument({value, index}: {value: string; index: number}) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   return <div className={styles.argument}>
-    <span className={styles.argumentLabel}>Argument {index + 1}</span>
-    <code>{value.length > 48 ? `${value.slice(0,32)}…${value.slice(-12)}` : value}</code>
+    <code>{value.length > 24 ? `${value.slice(0,12)}…${value.slice(-8)}` : value}</code>
     <button type="button" className={styles.copyButton} title={copied ? 'Copied' : 'Copy CBOR'} aria-label={`Copy argument ${index + 1} CBOR`} onClick={async () => {
       setError('');
       try {await navigator.clipboard.writeText(value); setCopied(true);} catch {setError('Copy failed. Select the full CBOR below.');}
@@ -88,7 +87,7 @@ export default function ProjectCaptures({project, endpoint, onRevoke}: {project:
         {entries.flatMap(entry => entry.payload?.evaluations.length ? entry.payload.evaluations.map((evaluation, index) => <tr key={`${entry.captureId}:${index}`}>
           <td><Timestamp value={entry.createdAt}/></td>
           <td><strong>{validatorName(entry.payload!, evaluation)}</strong><small className={styles.captureId}>Capture {entry.captureId}<br/>Script {evaluation.scriptHash}</small>{(evaluation.result.error || captureError(entry.payload!)) && <p className={styles.failure}>{evaluation.result.error || captureError(entry.payload!)}</p>}</td>
-          <td>{evaluation.arguments.length ? evaluation.arguments.map((value, i) => <Argument key={i} value={value} index={i}/>) : 'No arguments recorded'}</td>
+          <td>{evaluation.arguments.length ? <ol className={styles.argumentsList}>{evaluation.arguments.map((value, i) => <li key={i}><Argument value={value} index={i}/></li>)}</ol> : 'No arguments recorded'}</td>
         </tr>) : [<tr key={entry.captureId}><td><Timestamp value={entry.createdAt}/></td><td><small>Capture {entry.captureId}</small></td><td>{entry.error ?? 'No validator evaluations recorded'}</td></tr>])}
         {!entries.length && !busy && !error && <tr><td colSpan={3} className={styles.empty}>No failed captures yet.</td></tr>}
       </tbody></table>

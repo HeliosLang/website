@@ -18,7 +18,7 @@ export default function DebuggerConsole({projectPage = false}: {projectPage?: bo
   const cliLogin = new URLSearchParams(search).get('cli_login');
   const validCliLogin = cliLogin && /^[a-f0-9-]{36}$/.test(cliLogin);
   const [keys, setKeys] = useState<Key[]>([]);
-  const activeKeys = keys.filter(key => !key.revoked);
+  const activeKeys = keys.filter(key => !key.revoked).sort((a, b) => b.created_at - a.created_at || b.id.localeCompare(a.id));
   const [connected, setConnected] = useState(false);
   const [name, setName] = useState('');
   const [secret, setSecret] = useState('');
