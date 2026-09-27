@@ -347,3 +347,33 @@ test("wallet sessions resume only for their owner and expire or revoke normally"
     f.db.exec("UPDATE sessions SET expires=0")
     assert.equal((await f.request("auth/session", "POST", {address:wallet.address}, renewed)).status, 401)
 })
+
+
+test("project metadata is scoped to the bearer key and rejects revoked credentials", async () => {
+    const f = fixture()
+    const session = await login(f)
+    const create = async (name, owner = session) =>
+        (await f.request("keys", "POST", { name }, owner)).json()
+    const keys = [await create("Browser"), await create("CLI"), await create("Other wallet", await login(f))]
+    for (const [index, key] of keys.entries()) {
+        const response = await f.request("project", "GET", undefined, {
+            Authorization: `Bearer ${key.apiKey}`,
+            Origin: "https://app.example"
+        })
+        assert.equal(response.status, 200)
+        const project = await response.json()
+        assert.deepEqual(Object.keys(project).sort(), ["created_at", "id", "name"])
+        assert.equal(project.id, key.id)
+        assert.equal(project.name, ["Browser", "CLI", "Other wallet"][index])
+        assert.equal(project.created_at, f.db.prepare("SELECT created_at FROM api_keys WHERE id=?").get(key.id).created_at)
+        assert.equal(response.headers.get("Cache-Control"), "no-store")
+        assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*")
+        assert.equal(response.headers.get("Access-Control-Allow-Credentials"), null)
+    }
+    for (const headers of [{}, session, {Authorization: "Bearer invalid"}, {Authorization: "Bearer hdbg_" + "00".repeat(32)}]) {
+        assert.equal((await f.request("project", "GET", undefined, headers)).status, 401)
+    }
+    assert.equal((await f.request(`keys/${keys[0].id}`, "DELETE", undefined, session)).status, 200)
+    assert.equal((await f.request("project", "GET", undefined, {Authorization: `Bearer ${keys[0].apiKey}`})).status, 401)
+    assert.equal((await f.request("project", "GET", undefined, {Authorization: `Bearer ${keys[1].apiKey}`})).status, 200)
+})

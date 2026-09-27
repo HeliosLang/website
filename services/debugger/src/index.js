@@ -204,12 +204,14 @@ async function route(request, env) {
     const key =
         apiKey &&
         (await env.DB.prepare(
-            "SELECT id FROM api_keys WHERE hash=? AND revoked=0"
+            "SELECT id,name,created_at FROM api_keys WHERE hash=? AND revoked=0"
         )
             .bind(await hash(apiKey))
             .first())
     if (!key) fail(401, "API key required")
     await rate(env, `key:${key.id}`, 60, now)
+    if (path === "/v1/project" && request.method === "GET")
+        return json({ id: key.id, name: key.name, created_at: key.created_at })
     if (path === "/v1/captures" && request.method === "POST") {
         const capture = await body(request, MAX_BYTES)
         if (!validCapture(capture)) fail(400, "Invalid capture v1")
