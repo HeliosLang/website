@@ -1,0 +1,11 @@
+---
+title: Project | Console
+description: Inspect failed validator captures for a debugger project
+---
+
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import DebuggerConsole from '@site/src/components/DebuggerConsole';
+
+<BrowserOnly fallback={<><h1>Project</h1><p>Loading console…</p></>}>
+  {() => <DebuggerConsole projectPage />}
+</BrowserOnly>

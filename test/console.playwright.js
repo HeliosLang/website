@@ -3,6 +3,7 @@ async (page) => {
   const check = (condition, message) => {if (!condition) throw new Error(message);};
   await page.unrouteAll({behavior: 'ignoreErrors'});
   await page.setViewportSize({width:1280,height:900});
+  await page.route('https://debugger.helios-lang.io/v1/**', route=>route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({error:'No session'})}));
   await page.goto(origin + '/console/');
   await page.getByRole('heading',{name:'Console',exact:true,level:1}).waitFor();
   check((await page.title()).startsWith('Console'), 'Page title');
@@ -43,7 +44,8 @@ async (page) => {
     else if (path === '/v1/keys' && method === 'POST') {
       const key = {id:'key'+(keys.length+1),name:route.request().postDataJSON().name,created_at:1727452800,revoked:0};
       keys.push(key); body = {id:key.id,apiKey:'hdbg_'+'ab'.repeat(32)};
-    } else if (path === '/v1/keys' && method === 'GET') body = {keys};
+    } else if (path === '/v1/keys' && method === 'GET') {status=sessionAlive?200:401;body=sessionAlive?{keys}:{error:'No session'};}
+    else if(path.endsWith('/captures')) body={captures:[],nextCursor:null};
     else if (method === 'DELETE') keys.find(key=>path.endsWith('/'+key.id)).revoked=1;
     await route.fulfill({status,contentType:'application/json',headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Credentials':'true'},body:JSON.stringify(body)});
   });
@@ -86,7 +88,7 @@ async (page) => {
   await page.getByText('Copy this API key now, or install it later using helios login.').waitFor();
   await page.getByRole('button',{name:'Dismiss secret'}).click();
   check(await page.getByText('hdbg_'+'ab'.repeat(32),{exact:true}).count()===0, 'Secret dismissed');
-  await table.getByRole('button',{name:'Browser test',exact:true}).waitFor();
+  await table.getByRole('link',{name:'Browser test',exact:true}).waitFor();
   check(await table.locator('time').getAttribute('datetime')==='2024-09-27T16:00:00.000Z', 'Creation time must use server timestamp');
   await page.getByRole('button',{name:'New project',exact:true}).click();
   await create.getByLabel('Project name').fill('Second project');
@@ -100,22 +102,19 @@ async (page) => {
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth), 'Projects mobile overflow');
   await checkTableWidth();
   await page.screenshot({path:'output/playwright/projects-mobile.png',fullPage:true});
-  await table.getByRole('button',{name:'Browser test',exact:true}).click();
-  const detail = page.getByRole('dialog',{name:'Browser test',exact:true});
-  await detail.getByRole('button',{name:'Revoke API key',exact:true}).click();
-  await detail.getByText('API key revoked',{exact:true}).waitFor();
-  await detail.getByRole('button',{name:'Close project details'}).click();
+  await table.getByRole('link',{name:'Browser test',exact:true}).click();
+  await page.getByRole('heading',{name:'Browser test',exact:true}).waitFor();
+  await page.evaluate(()=>{window.confirm=()=>true});
+  await page.getByRole('button',{name:'Revoke API key',exact:true}).click();
+  await page.getByText('API key revoked',{exact:true}).waitFor();
+  await page.getByRole('navigation',{name:'Breadcrumb'}).getByRole('link',{name:'Console'}).click();
   await table.getByText('Revoked',{exact:true}).waitFor();
   check(challenges===1, 'Initial connection signs once');
   check(await page.evaluate(()=>localStorage.getItem('helios.debugger.wallet'))==='eternl', 'Remember provider only');
   check(await page.evaluate(()=>!JSON.stringify(localStorage).includes('hdbg_')), 'No API key in localStorage');
   await page.reload();
-  await page.getByRole('button',{name:'Connect wallet',exact:true}).waitFor();
-  await page.evaluate(() => {window.cardano = {eternl:{name:'Eternl',enable:async()=>({getUsedAddresses:async()=>['60'+'11'.repeat(28)],signData:async()=>{throw new Error('Reconnection must not request a signature')}})}};});
-  await page.getByRole('button',{name:'Connect wallet',exact:true}).click();
-  await picker.getByRole('button',{name:'Eternl',exact:true}).click();
   await table.waitFor();
-  check(challenges===1, 'Valid session must skip signing');
+  check(challenges===1, 'Valid session must restore without signing');
   await logout.click();
   await page.getByRole('button',{name:'Connect wallet',exact:true}).waitFor();
   check(await logout.count()===0, 'Logout hidden when disconnected');

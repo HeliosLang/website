@@ -433,3 +433,42 @@ test("CLI login requires a project and handles wrong tokens, cancellation and ex
     await worker.scheduled({}, f.env)
     assert.equal(f.db.prepare("SELECT COUNT(*) AS n FROM cli_logins").get().n, 0)
 })
+
+test('website capture browsing is wallet scoped, failed-only, paginated and survives revocation', async () => {
+    const f = fixture(), session = await login(f), stranger = await login(f);
+    const project = await (await f.request('keys', 'POST', {name:'Time lock'}, session)).json();
+    const other = await (await f.request('keys', 'POST', {name:'Other'}, stranger)).json();
+    const auth = {Authorization:`Bearer ${project.apiKey}`};
+    const ids = [];
+    for(let i=0;i<12;i++) {
+        const captureId=crypto.randomUUID(); ids.push(captureId);
+        assert.equal((await f.request('captures','POST',{version:1,captureId,status:'failed',evaluations:[]},auth)).status,201);
+    }
+    const success=crypto.randomUUID();
+    await f.request('captures','POST',{version:1,captureId:success,status:'succeeded',evaluations:[]},auth);
+    const path=`keys/${project.id}/captures`;
+    const response=await f.request(path,'GET',undefined,session);
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get('Access-Control-Allow-Credentials'),'true');
+    assert.equal(response.headers.get('Cache-Control'),'no-store');
+    const first=await response.json();
+    assert.equal(first.captures.length,10);
+    assert.equal(first.captures[0].captureId,ids[11]);
+    const second=await (await f.request(`${path}?before=${first.nextCursor}`,'GET',undefined,session)).json();
+    assert.equal(second.captures.length,2); assert.equal(second.nextCursor,null);
+    assert.equal((await f.request(path,'GET',undefined,stranger)).status,404);
+    assert.equal((await f.request(path,'GET',undefined,auth)).status,401);
+    assert.equal((await f.request(path,'GET',undefined,{...session,Origin:'https://evil.example'})).status,403);
+    assert.equal((await f.request(`${path}?before=bad`,'GET',undefined,session)).status,400);
+    assert.equal((await f.request(`${path}/${success}`,'GET',undefined,session)).status,404);
+    assert.equal((await f.request(`keys/${other.id}/captures/${ids[0]}`,'GET',undefined,stranger)).status,404);
+    const detail=await (await f.request(`${path}/${ids[0]}`,'GET',undefined,session)).json();
+    assert.equal(detail.captureId,ids[0]);
+    assert.ok(!JSON.stringify(first).includes(project.apiKey));
+    await f.request(`keys/${project.id}`,'DELETE',undefined,session);
+    assert.equal((await f.request(`${path}/${ids[0]}`,'GET',undefined,session)).status,200);
+    f.db.prepare('UPDATE captures SET expires=0 WHERE capture_id=?').run(ids[0]);
+    assert.equal((await f.request(`${path}/${ids[0]}`,'GET',undefined,session)).status,404);
+    f.objects.clear();
+    assert.equal((await f.request(`${path}/${ids[1]}`,'GET',undefined,session)).status,404);
+});

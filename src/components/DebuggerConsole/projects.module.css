@@ -20,3 +20,11 @@ table.table { display: table; width: 100%; table-layout: fixed; border-collapse:
 :global([data-theme='dark']) .logout { color: #ff8585; }
 
 .subtitle { margin: 6px 0 0; color: var(--ifm-color-emphasis-700); font-size: .9rem; }
+.breadcrumb { margin-bottom: 20px; overflow-wrap: anywhere; }
+.argument { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+.argumentLabel { flex-basis: 100%; font-size: .8rem; color: var(--ifm-color-emphasis-700); }
+.argument code { font-size: .8rem; overflow-wrap: anywhere; }
+.argument textarea { width: 100%; min-height: 80px; }
+.captureId { display: block; margin-top: 8px; color: var(--ifm-color-emphasis-700); }
+.failure { margin-top: 8px; color: var(--ifm-color-danger); }
+@media (max-width: 600px) { .projectHeader { align-items: flex-start; flex-wrap: wrap; } .projectHeader h1 { font-size: 1.8rem; } }

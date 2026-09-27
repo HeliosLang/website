@@ -1,3 +1,4 @@
+import { projectCaptures } from "./project-captures.js"
 import { encryptKey } from "./key-secrets.js"
 import { cliLogin } from "./cli-login.js"
 import { validCapture } from "./capture.js"
@@ -190,6 +191,8 @@ async function route(request, env) {
                 .run()
             return json({ id, apiKey }, 201)
         }
+        if (/^\/v1\/keys\/[^/]+\/captures(?:\/|$)/.test(path))
+            return projectCaptures(request, env, session.wallet, now)
         const keyId = path.match(/^\/v1\/keys\/([a-f0-9-]+)$/)?.[1]
         if (keyId && request.method === "DELETE") {
             const result = await env.DB.prepare(

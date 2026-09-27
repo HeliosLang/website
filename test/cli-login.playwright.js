@@ -3,19 +3,19 @@ async (page) => {
   const id = '12345678-1234-1234-1234-123456789012';
   const origin = 'http://127.0.0.1:4318';
   await page.unrouteAll({behavior:'ignoreErrors'});
-  let state = 'pending', keys = [], refused = false, approvals = 0;
+  let state = 'pending', keys = [], refused = false, approvals = 0, authenticated = false;
   await page.route('https://debugger.helios-lang.io/v1/**', async route => {
     const path = route.request().url().replace('https://debugger.helios-lang.io/v1/','');
     const method = route.request().method();
     let body={}, status=200;
     if(path==='auth/session') {status=401;body={error:'No session'}}
     else if(path==='auth/challenge') body={id:'challenge',payload:'abcd'};
-    else if(path==='auth/verify') body={expires:Math.floor(Date.now()/1000)+3600};
+    else if(path==='auth/verify') {authenticated=true;body={expires:Math.floor(Date.now()/1000)+3600};}
     else if(path===`auth/cli-logins/${id}`) {
       if(method==='POST') {state='approved';approvals++;}
       else if(method==='DELETE') state='cancelled';
       body={state,code:'ABCDEF12',expires:Math.floor(Date.now()/1000)+600};
-    } else if(path==='keys' && method==='GET') body={keys};
+    } else if(path==='keys' && method==='GET') {status=authenticated?200:401;body=authenticated?{keys}:{error:'No session'};}
     else if(path==='keys' && method==='POST') {
       const name=route.request().postDataJSON().name;
       keys.push({id:'key',name,created_at:1727452800,revoked:0});
@@ -56,7 +56,7 @@ async (page) => {
   await panel.getByText('You can now close this tab',{exact:true}).waitFor({timeout:15000});
   await page.screenshot({path:'output/playwright/cli-login-completed.png',fullPage:true});
   state='pending'; keys.push({id:'second',name:'Second project',created_at:1727452800,revoked:0});
-  await page.reload(); await connect();
+  await page.reload();
   await panel.getByText('Second project',{exact:true}).waitFor();
   await page.setViewportSize({width:390,height:844});
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'CLI authorization mobile layout');

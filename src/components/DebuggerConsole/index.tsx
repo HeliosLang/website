@@ -1,5 +1,7 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useLocation} from '@docusaurus/router';
+import Link from '@docusaurus/Link';
+import ProjectCaptures from './ProjectCaptures';
 import CliLoginApproval from './CliLoginApproval';
 import WalletPicker from './WalletPicker';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
@@ -7,10 +9,12 @@ import styles from './projects.module.css';
 import modal from './walletPicker.module.css';
 
 type Key = {id: string; name: string; created_at: number; revoked: number};
-export default function DebuggerConsole() {
+export default function DebuggerConsole({projectPage = false}: {projectPage?: boolean}) {
   const {siteConfig} = useDocusaurusContext();
   const endpoint = String(siteConfig.customFields?.debuggerApiUrl ?? 'https://debugger.helios-lang.io');
   const {search} = useLocation();
+  const projectId = new URLSearchParams(search).get('id');
+  const [checkingSession, setCheckingSession] = useState(true);
   const cliLogin = new URLSearchParams(search).get('cli_login');
   const validCliLogin = cliLogin && /^[a-f0-9-]{36}$/.test(cliLogin);
   const [keys, setKeys] = useState<Key[]>([]);
@@ -20,9 +24,6 @@ export default function DebuggerConsole() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const createDialog = useRef<HTMLDialogElement>(null);
-  const detailDialog = useRef<HTMLDialogElement>(null);
-  const [selectedId, setSelectedId] = useState('');
-  const selected = keys.find(key => key.id === selectedId);
   const creationTime = (key: Key) => <time dateTime={new Date(key.created_at * 1000).toISOString()}>
     {new Date(key.created_at * 1000).toLocaleString(undefined, {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
   </time>;
@@ -35,7 +36,24 @@ export default function DebuggerConsole() {
   }
   async function run(action: () => Promise<void>) { setBusy(true); setError(''); try { await action(); } catch (e) { setError(e instanceof Error ? e.message : 'Wallet request cancelled or failed'); } finally {setBusy(false);} }
   const refresh = async () => setKeys((await api('keys')).keys);
+  useEffect(() => {
+    const abort = new AbortController();
+    void fetch(`${endpoint}/v1/keys`, {credentials:'include', signal:abort.signal}).then(async response => {
+      if (response.status === 401) return;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Unable to load projects');
+      setKeys(data.keys); setConnected(true);
+    }).catch(e => {if (!abort.signal.aborted) setError(e.message);}).finally(() => {if (!abort.signal.aborted) setCheckingSession(false);});
+    return () => abort.abort();
+  }, [projectPage, endpoint]);
+  if (checkingSession) return <><h1>Console</h1><p role="status">Loading console…</p></>;
+  if (projectPage && connected) {
+    const project = keys.find(key => key.id === projectId);
+    if (!project) return <><Link to="/console">← Console</Link><h1>Project not found</h1><p>This project is unavailable to the connected wallet.</p></>;
+    return <ProjectCaptures key={project.id} project={project} endpoint={endpoint} onRevoke={async () => {await api(`keys/${project.id}`, 'DELETE'); await refresh();}}/>;
+  }
   return <>
+    {projectPage && <Link to="/console">← Console</Link>}
     <header className={styles.consoleHeader}>
       <h1>Console</h1>
       {connected && <button type="button" className={styles.logout} aria-label="Log out" title="Log out" disabled={busy}
@@ -78,7 +96,7 @@ export default function DebuggerConsole() {
         <tbody>{keys.length === 0 ? <tr><td colSpan={2} className={styles.empty}>
           <button className="button button--primary" disabled={busy} onClick={openCreate}>Create project</button>
         </td></tr> : keys.map(key => <tr key={key.id}>
-          <td><button className={styles.projectName} onClick={() => {setSelectedId(key.id); setError(''); detailDialog.current?.showModal();}}>{key.name}</button>
+          <td><Link className={styles.projectName} to={`/console/project?id=${encodeURIComponent(key.id)}`}>{key.name}</Link>
             {!!key.revoked && <span className={styles.revoked}>Revoked</span>}</td>
           <td>{creationTime(key)}</td>
         </tr>)}</tbody>
@@ -99,19 +117,7 @@ export default function DebuggerConsole() {
             <button className="button button--primary" disabled={busy || !name.trim()}>Create project</button></div>
         </form>
       </dialog>
-      <dialog ref={detailDialog} className={modal.dialog} aria-labelledby="project-detail-title">
-        <div className={modal.content}>
-          <header className={modal.header}><h2 id="project-detail-title">{selected?.name ?? 'Project'}</h2>
-            <button type="button" className={modal.close} aria-label="Close project details" onClick={() => detailDialog.current?.close()}>×</button>
-          </header>
-          {error && <p role="alert" className="alert alert--danger">{error}</p>}
-          {selected && <><p>Created {creationTime(selected)}</p>
-            {selected.revoked ? <p>API key revoked</p> : <button className="button button--danger" disabled={busy} onClick={() => void run(async () => {
-              await api(`keys/${selected.id}`,'DELETE'); setSecret(''); await refresh();
-            })}>Revoke API key</button>}
-          </>}
-        </div>
-      </dialog>
+
     </>}
     </section>
   </>;
