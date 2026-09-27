@@ -1,0 +1,24 @@
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 16px;
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  box-shadow: 0 20px 80px rgb(0 0 0 / 25%);
+}
+.dialog::backdrop { background: rgb(15 12 24 / 55%); }
+.content { padding: 24px; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.header h2 { margin: 0; font-size: 1.4rem; }
+.close { border: 0; background: none; color: inherit; font-size: 28px; line-height: 1; padding: 6px; border-radius: 6px; cursor: pointer; }
+.description { font-size: .9rem; color: var(--ifm-color-emphasis-700); margin: 0 0 16px; }
+.list { display: flex; flex-direction: column; gap: 10px; }
+.wallet { display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 16px; border: 1px solid var(--ifm-color-emphasis-200); border-radius: 10px; background: var(--ifm-background-color); color: inherit; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.wallet img { flex: 0 0 36px; object-fit: contain; border-radius: 8px; }
+.wallet:not(:disabled):hover { border-color: var(--ifm-color-primary); background: var(--ifm-color-emphasis-100); }
+.wallet:disabled { opacity: .48; cursor: not-allowed; }
+.wallet:focus-visible, .close:focus-visible { outline: 2px solid var(--ifm-color-primary); outline-offset: 3px; }
+.list + .description { margin: 16px 0 0; }
+@media (max-width: 480px) { .content { padding: 20px; } }

@@ -1,0 +1,22 @@
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 16px; }
+.toolbar h2 { margin: 0; font-size: 1.4rem; }
+table.table { display: table; width: 100%; table-layout: fixed; border-collapse: collapse; }
+.table th, .table td { text-align: left; padding: 16px; overflow-wrap: anywhere; }
+.table th { background: var(--ifm-color-emphasis-100); }
+.table .empty { height: 220px; text-align: center; vertical-align: middle; }
+.projectName { background: none; border: 0; padding: 0; color: var(--ifm-link-color); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.projectName:hover { text-decoration: underline; }
+.revoked { display: block; color: var(--ifm-color-emphasis-700); font-size: .8rem; margin-top: 4px; }
+.label { display: flex; flex-direction: column; gap: 8px; font-weight: 600; }
+.label input { width: 100%; border: 1px solid var(--ifm-color-emphasis-400); border-radius: 6px; padding: 10px 12px; background: var(--ifm-background-color); color: var(--ifm-font-color-base); font: inherit; font-weight: normal; }
+.actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+@media (max-width: 480px) { .table th, .table td { padding: 12px; } .table time { font-size: .85rem; } }
+.consoleHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.consoleHeader h1 { margin: 0; }
+.logout { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 10px; border: 0; border-radius: 8px; background: transparent; color: #c62828; cursor: pointer; }
+.logout:hover { background: rgb(198 40 40 / 10%); }
+.logout:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.logout:disabled { opacity: .5; cursor: wait; }
+:global([data-theme='dark']) .logout { color: #ff8585; }
+
+.subtitle { margin: 6px 0 0; color: var(--ifm-color-emphasis-700); font-size: .9rem; }

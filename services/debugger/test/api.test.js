@@ -65,8 +65,7 @@ function fixture() {
         )
     return { env, request, db, objects }
 }
-async function login(f) {
-    const wallet = makeTestWallet()
+async function login(f, wallet = makeTestWallet()) {
     const challenge = await (
         await f.request("auth/challenge", "POST", {
             address: wallet.address
@@ -325,4 +324,26 @@ test("health readiness, size limit, CORS and retention cleanup", async () => {
     )
     f.db.exec("DROP TABLE captures")
     assert.equal((await f.request("health")).status, 500)
+})
+
+
+test("wallet sessions resume only for their owner and expire or revoke normally", async () => {
+    const f = fixture(), wallet = makeTestWallet(), other = makeTestWallet()
+    const headers = await login(f, wallet)
+    const resume = address => f.request("auth/session", "POST", {address}, headers)
+    const result = await resume(wallet.address)
+    assert.equal(result.status, 200)
+    const session = await result.json()
+    assert.equal(session.matches, true)
+    assert.ok(session.expires > Date.now() / 1000)
+    assert.equal(result.headers.get("Set-Cookie"), null)
+    assert.equal((await (await resume(other.address)).json()).matches, false)
+    assert.equal((await resume("invalid")).status, 400)
+    assert.equal((await f.request("auth/session", "POST", {address:wallet.address})).status, 401)
+    assert.equal((await f.request("auth/session", "POST", {address:wallet.address}, {...headers,Origin:"https://other.test"})).status, 403)
+    await f.request("auth/logout", "POST", {}, headers)
+    assert.equal((await resume(wallet.address)).status, 401)
+    const renewed = await login(f, wallet)
+    f.db.exec("UPDATE sessions SET expires=0")
+    assert.equal((await f.request("auth/session", "POST", {address:wallet.address}, renewed)).status, 401)
 })

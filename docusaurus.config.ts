@@ -68,7 +68,7 @@ const config: Config = {
         src: 'img/logo.png',
       },
       items: [
-        {to: '/console/debugger', label: 'Debugger', position: 'right'},
+        {to: '/console', label: 'Console', position: 'right'},
         {
           type: 'docSidebar',
           sidebarId: 'learnSidebar',

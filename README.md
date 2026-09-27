@@ -1,6 +1,6 @@
 # Helios website and debugger operations
 
-The Docusaurus site builds into `dist`. The `/console/debugger` page manages wallet-authenticated debugger API keys. Captures and replay belong to the original `tx-utils`, `contract-utils`, ledger and VS Code repositories. Cloudflare Worker + D1 + private R2 replace the milestone's proposed AWS infrastructure.
+The Docusaurus site builds into `dist`. The `/console` page manages wallet-authenticated debugger API keys. Captures and replay belong to the original `tx-utils`, `contract-utils`, ledger and VS Code repositories. Cloudflare Worker + D1 + private R2 replace the milestone's proposed AWS infrastructure.
 
 ## Local development
 
@@ -63,7 +63,7 @@ Official references: [CI token creation](https://developers.cloudflare.com/pages
 1. Run frontend checks and the tests in `services/debugger`. Review the Worker and website changes together.
 2. Configure the `cloudflare` GitHub environment above before merging the workflow to `main`. Disable overlapping Cloudflare Git builds if enabled.
 3. Merge the website changes into `main` to trigger deployment. Later deployments can also be started manually on `main`, without environment inputs. Inspect provisioning, migrations, Worker health checks and the Pages upload.
-4. Confirm `https://debugger.helios-lang.io/v1/health` returns `{"ok":true,"apiVersion":1}`; unauthenticated `/v1/captures` must return 401. Visit `https://helios-lang.io/console/debugger`, connect a wallet, create two keys, upload a capture with one and verify the other cannot read it. Revoke a key and confirm its feed returns 401.
+4. Confirm `https://debugger.helios-lang.io/v1/health` returns `{"ok":true,"apiVersion":1}`; unauthenticated `/v1/captures` must return 401. Visit `https://helios-lang.io/console`, connect a wallet, create two keys, upload a capture with one and verify the other cannot read it. Revoke a key and confirm its feed returns 401.
 5. Inspect the production smoke checks and deployment summary containing the website commit covering both frontend and backend. A subsequent manual deployment can verify resource discovery and migration idempotency. A failed backend check prevents Pages deployment.
 
 Builds do not receive deployment credentials. The only public endpoint setting is `DEBUGGER_API_URL`. Inspect `dist` before release for secret-like content; never test secret exclusion by supplying a real token to the build.

@@ -1,0 +1,4 @@
+Wallet logos sourced from Cardano Foundation cardano-connect-with-wallet core/walletIcons.ts
+https://github.com/cardano-foundation/cardano-connect-with-wallet
+Licensed under Apache-2.0; see LICENSE.txt. Wallet names and logos belong to their respective owners.
+Logo data decoded into standalone image files without visual changes.

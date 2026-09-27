@@ -1,0 +1,11 @@
+---
+title: Console
+description: Manage API keys for the Helios debugger
+---
+
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import DebuggerConsole from '@site/src/components/DebuggerConsole';
+
+<BrowserOnly fallback={<><h1>Console</h1><p>Enable JavaScript to connect your wallet.</p></>}>
+  {() => <DebuggerConsole />}
+</BrowserOnly>

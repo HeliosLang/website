@@ -1,5 +1,6 @@
 import { validCapture } from "./capture.js"
 import { verifyWallet } from "./auth.js"
+import { decodeShelleyAddress } from "@helios-lang/ledger"
 const MAX_BYTES = 10 * 1024 * 1024
 const encoder = new TextEncoder()
 const hex = (bytes) =>
@@ -136,11 +137,23 @@ async function route(request, env) {
         const session =
             token &&
             (await env.DB.prepare(
-                "SELECT wallet FROM sessions WHERE hash=? AND expires>?"
+                "SELECT wallet,expires FROM sessions WHERE hash=? AND expires>?"
             )
                 .bind(await hash(token), now)
                 .first())
         if (!session) fail(401, "Website session required")
+        if (path === "/v1/auth/session" && request.method === "POST") {
+            const { address } = await body(request, 16384)
+            let wallet
+            try {
+                const credential = decodeShelleyAddress(address).spendingCredential
+                if (credential.kind !== "PubKeyHash") throw new Error("Not a payment key")
+                wallet = hex(credential.bytes)
+            } catch {
+                fail(400, "Invalid wallet address")
+            }
+            return json({ matches: wallet === session.wallet, expires: session.expires })
+        }
         if (path === "/v1/auth/logout" && request.method === "POST") {
             await env.DB.prepare("DELETE FROM sessions WHERE hash=?")
                 .bind(await hash(token))
