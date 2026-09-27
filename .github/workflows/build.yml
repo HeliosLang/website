@@ -25,7 +25,7 @@ jobs:
       - run: pnpm --dir website/services/debugger test
       - run: pnpm --dir website/services/debugger test:runtime
       - run: pnpm --dir website/services/debugger check
-      - run: node --test website/test/provision.test.mjs
+      - run: node --test website/test/provision.test.mjs website/test/smoke.test.mjs
       - run: pnpm --dir website typecheck
       - run: pnpm --dir website build
         env:
