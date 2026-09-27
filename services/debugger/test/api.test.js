@@ -13,6 +13,7 @@ function fixture() {
             "utf8"
         )
     )
+    db.exec(readFileSync(new URL("../migrations/0002_cli_login.sql", import.meta.url), "utf8"))
     const prepare = (sql) => ({
         bind(...args) {
             return {
@@ -32,6 +33,7 @@ function fixture() {
     })
     const objects = new Map()
     const env = {
+        DEBUGGER_KEY_ENCRYPTION_KEY: btoa("x".repeat(32)),
         WEBSITE_ORIGIN: "https://helios-lang.io",
         DB: {
             prepare,
@@ -376,4 +378,58 @@ test("project metadata is scoped to the bearer key and rejects revoked credentia
     assert.equal((await f.request(`keys/${keys[0].id}`, "DELETE", undefined, session)).status, 200)
     assert.equal((await f.request("project", "GET", undefined, {Authorization: `Bearer ${keys[0].apiKey}`})).status, 401)
     assert.equal((await f.request("project", "GET", undefined, {Authorization: `Bearer ${keys[1].apiKey}`})).status, 200)
+})
+
+test("CLI login exports the same active keys only after wallet approval and stops at completion", async () => {
+    const f = fixture(), session = await login(f), other = await login(f)
+    const create = async (name, owner = session) => (await f.request("keys", "POST", {name}, owner)).json()
+    const a = await create("App"), b = await create("App"), revoked = await create("Revoked")
+    await create("Other wallet", other)
+    await f.request(`keys/${revoked.id}`, "DELETE", undefined, session)
+    const flow = await (await f.request("cli/logins", "POST")).json()
+    const token = {Authorization:`Bearer ${flow.token}`}
+    const poll = () => f.request(`cli/logins/${flow.id}`, "GET", undefined, token)
+    const approve = () => f.request(`auth/cli-logins/${flow.id}`, "POST", undefined, session)
+    assert.equal(flow.verificationUri, `https://helios-lang.io/console?cli_login=${flow.id}`)
+    assert.ok(!flow.verificationUri.includes(flow.token))
+    assert.deepEqual(await (await poll()).json(), {state:"pending"})
+    assert.equal((await f.request(`cli/logins/${flow.id}`, "GET")).status, 401)
+    assert.equal((await f.request(`auth/cli-logins/${flow.id}`, "POST", undefined, token)).status, 401)
+    assert.equal((await f.request(`auth/cli-logins/${flow.id}`, "POST", undefined, {...session,Origin:"https://evil.test"})).status, 403)
+    const status = await (await f.request(`auth/cli-logins/${flow.id}`, "GET", undefined, session)).json()
+    assert.equal(status.code, flow.code)
+    assert.equal((await approve()).status, 200)
+    assert.equal((await approve()).status, 409)
+    assert.equal((await f.request(`auth/cli-logins/${flow.id}`, "GET", undefined, other)).status, 403)
+    const response = await poll(), data = await response.json()
+    assert.equal(response.headers.get("Cache-Control"), "no-store")
+    assert.deepEqual(new Set(data.projects.map(p => p.apiKey)), new Set([a.apiKey,b.apiKey]))
+    assert.deepEqual(await (await poll()).json(), data)
+    const encrypted = f.db.prepare("SELECT encrypted_secret FROM api_keys WHERE id=?").get(a.id).encrypted_secret
+    assert.ok(!encrypted.includes(a.apiKey))
+    assert.notEqual(f.db.prepare("SELECT token_hash FROM cli_logins WHERE id=?").get(flow.id).token_hash, flow.token)
+    assert.equal((await f.request(`cli/logins/${flow.id}/complete`, "POST", undefined, token)).status, 200)
+    assert.deepEqual(await (await poll()).json(), {state:"completed"})
+    assert.equal((await (await f.request(`auth/cli-logins/${flow.id}`, "DELETE", undefined, session)).json()).state, "completed")
+    assert.equal((await f.request(`cli/logins/${flow.id}/complete`, "POST", undefined, token)).status, 200)
+    assert.equal((await (await f.request(`auth/cli-logins/${flow.id}`, "GET", undefined, session)).json()).state, "completed")
+})
+
+test("CLI login requires a project and handles wrong tokens, cancellation and expiry", async () => {
+    const f = fixture(), session = await login(f)
+    const start = async () => (await (await f.request("cli/logins", "POST")).json())
+    const flow = await start(), token = {Authorization:`Bearer ${flow.token}`}
+    assert.equal((await f.request(`auth/cli-logins/${flow.id}`, "POST", undefined, session)).status, 409)
+    assert.equal((await f.request(`cli/logins/${flow.id}/complete`, "POST", undefined, token)).status, 409)
+    assert.equal((await f.request(`cli/logins/${flow.id}`, "GET", undefined, {Authorization:'Bearer hcli_'+'00'.repeat(32)})).status, 401)
+    await f.request(`auth/cli-logins/${flow.id}`, "DELETE", undefined, session)
+    assert.deepEqual(await (await f.request(`cli/logins/${flow.id}`, "GET", undefined, token)).json(), {state:"cancelled"})
+    await f.request("keys", "POST", {name:"First"}, session)
+    assert.equal((await f.request(`auth/cli-logins/${flow.id}`, "POST", undefined, session)).status, 409)
+    const expired = await start()
+    f.db.exec("UPDATE cli_logins SET expires=0")
+    assert.equal((await f.request(`cli/logins/${expired.id}`, "GET", undefined, {Authorization:`Bearer ${expired.token}`})).status, 410)
+    assert.equal((await f.request(`auth/cli-logins/${expired.id}`, "POST", undefined, session)).status, 410)
+    await worker.scheduled({}, f.env)
+    assert.equal(f.db.prepare("SELECT COUNT(*) AS n FROM cli_logins").get().n, 0)
 })

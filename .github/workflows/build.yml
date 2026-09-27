@@ -25,7 +25,7 @@ jobs:
       - run: pnpm --dir website/services/debugger test
       - run: pnpm --dir website/services/debugger test:runtime
       - run: pnpm --dir website/services/debugger check
-      - run: node --test website/test/provision.test.mjs website/test/smoke.test.mjs
+      - run: node --test website/test/provision.test.mjs website/test/smoke.test.mjs website/test/secret.test.mjs
       - run: pnpm --dir website typecheck
       - run: pnpm --dir website build
         env:
@@ -60,12 +60,15 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       - name: Migrate and deploy backend
+        env:
+          DEBUGGER_KEY_ENCRYPTION_KEY: ${{ secrets.DEBUGGER_KEY_ENCRYPTION_KEY }}
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: website/services/debugger
           wranglerVersion: '4.40.2'
+          preCommands: node ../../scripts/configure-debugger-secret.mjs wrangler.deploy.json
           command: |
             d1 migrations apply DB --remote --config wrangler.deploy.json
             deploy --config wrangler.deploy.json

@@ -83,7 +83,7 @@ async (page) => {
   await create.getByLabel('Project name').fill('Browser test');
   await create.getByRole('button',{name:'Create project',exact:true}).click();
   await create.waitFor({state:'hidden'});
-  await page.getByText('Copy this secret now. It will not be shown again.').waitFor();
+  await page.getByText('Copy this API key now, or install it later using helios login.').waitFor();
   await page.getByRole('button',{name:'Dismiss secret'}).click();
   check(await page.getByText('hdbg_'+'ab'.repeat(32),{exact:true}).count()===0, 'Secret dismissed');
   await table.getByRole('button',{name:'Browser test',exact:true}).waitFor();

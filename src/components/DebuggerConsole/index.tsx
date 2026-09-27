@@ -1,4 +1,6 @@
 import React, {useRef, useState} from 'react';
+import {useLocation} from '@docusaurus/router';
+import CliLoginApproval from './CliLoginApproval';
 import WalletPicker from './WalletPicker';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './projects.module.css';
@@ -8,6 +10,9 @@ type Key = {id: string; name: string; created_at: number; revoked: number};
 export default function DebuggerConsole() {
   const {siteConfig} = useDocusaurusContext();
   const endpoint = String(siteConfig.customFields?.debuggerApiUrl ?? 'https://debugger.helios-lang.io');
+  const {search} = useLocation();
+  const cliLogin = new URLSearchParams(search).get('cli_login');
+  const validCliLogin = cliLogin && /^[a-f0-9-]{36}$/.test(cliLogin);
   const [keys, setKeys] = useState<Key[]>([]);
   const [connected, setConnected] = useState(false);
   const [name, setName] = useState('');
@@ -40,7 +45,8 @@ export default function DebuggerConsole() {
         </svg>
       </button>}
     </header>
-    {!connected && <p>Connect your wallet to manage your debugger projects.</p>}
+    {cliLogin && !validCliLogin && <p role="alert">Invalid CLI login link. Run helios login again.</p>}
+    {!connected && <p>{validCliLogin ? 'Connect your wallet to authorize the Helios CLI and install your project API keys.' : 'Connect your wallet to manage your debugger projects.'}</p>}
     <section aria-label="Debugger projects">
     {error && <p role="alert" className="alert alert--danger">{error}</p>}
     {!connected ? <>
@@ -61,7 +67,8 @@ export default function DebuggerConsole() {
         try { localStorage.setItem('helios.debugger.wallet', id); } catch {}
       }}/>
     </> : <>
-      {secret && <div className="alert alert--warning margin-top--md"><p>Copy this secret now. It will not be shown again.</p><code style={{overflowWrap:'anywhere'}}>{secret}</code><p><button onClick={() => setSecret('')}>Dismiss secret</button></p></div>}
+      {validCliLogin && <CliLoginApproval key={cliLogin} id={cliLogin!} endpoint={endpoint} projects={keys} onCreate={openCreate}/>}
+      {secret && <div className="alert alert--warning margin-top--md"><p>Copy this API key now, or install it later using helios login.</p><code style={{overflowWrap:'anywhere'}}>{secret}</code><p><button onClick={() => setSecret('')}>Dismiss secret</button></p></div>}
       <div className={styles.toolbar}>
         <div><h2 id="projects-title">Projects</h2><p className={styles.subtitle}>Manager your Debugger API keys</p></div>
         {keys.length > 0 && <button className="button button--primary" disabled={busy} onClick={openCreate}>New project</button>}
@@ -80,7 +87,7 @@ export default function DebuggerConsole() {
         onCancel={event => {if (busy) event.preventDefault();}}>
         <form className={modal.content} onSubmit={event => {event.preventDefault(); void run(async () => {
           const key = await api('keys','POST',{name:name.trim()});
-          setSecret(key.apiKey); setName(''); createDialog.current?.close(); await refresh();
+          setSecret(validCliLogin ? '' : key.apiKey); setName(''); createDialog.current?.close(); await refresh();
         });}}>
           <header className={modal.header}><h2 id="create-project-title">Create project</h2>
             <button type="button" className={modal.close} aria-label="Close project creation" disabled={busy} onClick={() => createDialog.current?.close()}>×</button>

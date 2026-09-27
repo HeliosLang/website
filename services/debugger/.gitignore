@@ -4,3 +4,6 @@ node_modules/
 wrangler.deploy.json
 worker-configuration.d.ts
 .test-worker/
+
+.dev.vars
+.dev.vars.*

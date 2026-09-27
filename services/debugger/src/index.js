@@ -1,3 +1,5 @@
+import { encryptKey } from "./key-secrets.js"
+import { cliLogin } from "./cli-login.js"
 import { validCapture } from "./capture.js"
 import { verifyWallet } from "./auth.js"
 import { decodeShelleyAddress } from "@helios-lang/ledger"
@@ -73,6 +75,7 @@ async function route(request, env) {
         120,
         now
     )
+    if (path.startsWith("/v1/cli/")) return cliLogin(request, env, now)
     if (path.startsWith("/v1/auth/") || path.startsWith("/v1/keys")) {
         if (request.headers.get("Origin") !== env.WEBSITE_ORIGIN)
             fail(403, "Website origin required")
@@ -142,6 +145,7 @@ async function route(request, env) {
                 .bind(await hash(token), now)
                 .first())
         if (!session) fail(401, "Website session required")
+        if (path.startsWith("/v1/auth/cli-logins/")) return cliLogin(request, env, now, session.wallet)
         if (path === "/v1/auth/session" && request.method === "POST") {
             const { address } = await body(request, 16384)
             let wallet
@@ -180,9 +184,9 @@ async function route(request, env) {
             const id = crypto.randomUUID(),
                 apiKey = `hdbg_${secret()}`
             await env.DB.prepare(
-                "INSERT INTO api_keys(id,wallet,name,hash,created_at) VALUES (?,?,?,?,?)"
+                "INSERT INTO api_keys(id,wallet,name,hash,created_at,encrypted_secret) VALUES (?,?,?,?,?,?)"
             )
-                .bind(id, session.wallet, name.trim(), await hash(apiKey), now)
+                .bind(id, session.wallet, name.trim(), await hash(apiKey), now, await encryptKey(env, id, session.wallet, apiKey))
                 .run()
             return json({ id, apiKey }, 201)
         }
@@ -345,7 +349,7 @@ export default {
                 .run()
         }
         await env.DB.batch(
-            ["sessions", "challenges", "rate_limits"].map((table) =>
+            ["sessions", "challenges", "rate_limits", "cli_logins"].map((table) =>
                 env.DB.prepare(`DELETE FROM ${table} WHERE expires<=?`).bind(
                     now
                 )

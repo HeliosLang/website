@@ -6,7 +6,7 @@ async function check(dir) {
    if(entry.isDirectory()) await check(path)
    else if(/\.(js|json|html|css|map)$/.test(entry.name)) {
      const text=await readFile(path,'utf8')
-     if(/hdbg_[a-f0-9]{64}|CLOUDFLARE_API_TOKEN|BEGIN (?:RSA |EC )?PRIVATE KEY/.test(text)) throw new Error(`Potential credential in frontend artifact: ${path}`)
+     if(/hdbg_[a-f0-9]{64}|hcli_[a-f0-9]{64}|DEBUGGER_KEY_ENCRYPTION_KEY|CLOUDFLARE_API_TOKEN|BEGIN (?:RSA |EC )?PRIVATE KEY/.test(text)) throw new Error(`Potential credential in frontend artifact: ${path}`)
    }
  }
 }
