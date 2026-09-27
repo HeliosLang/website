@@ -1,5 +1,5 @@
 import { projectCaptures } from "./project-captures.js"
-import { encryptKey } from "./key-secrets.js"
+import { encryptKey, decryptKey } from "./key-secrets.js"
 import { cliLogin } from "./cli-login.js"
 import { validCapture } from "./capture.js"
 import { verifyWallet } from "./auth.js"
@@ -194,6 +194,20 @@ async function route(request, env) {
         if (/^\/v1\/keys\/[^/]+\/captures(?:\/|$)/.test(path))
             return projectCaptures(request, env, session.wallet, now)
         const keyId = path.match(/^\/v1\/keys\/([a-f0-9-]+)$/)?.[1]
+        if (keyId && request.method === "GET") {
+            const project = await env.DB.prepare(
+                "SELECT id,wallet,name,created_at,encrypted_secret FROM api_keys WHERE id=? AND wallet=? AND revoked=0"
+            ).bind(keyId, session.wallet).first()
+            if (!project) fail(404, "Project not found")
+            if (!project.encrypted_secret)
+                fail(409, "This legacy project key is unavailable. Create a new project to get a shareable API key.")
+            return json({
+                id: project.id,
+                name: project.name,
+                created_at: project.created_at,
+                apiKey: await decryptKey(env, project)
+            })
+        }
         if (keyId && request.method === "DELETE") {
             const result = await env.DB.prepare(
                 "UPDATE api_keys SET revoked=1 WHERE id=? AND wallet=?"

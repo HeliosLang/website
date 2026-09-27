@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
+import ApiKeyBox from './ApiKeyBox';
 import styles from './projects.module.css';
 
 type Project = {id: string; name: string; created_at: number; revoked: number};
@@ -37,6 +38,8 @@ function Argument({value, index}: {value: string; index: number}) {
   </div>;
 }
 export default function ProjectCaptures({project, endpoint, onRevoke}: {project: Project; endpoint: string; onRevoke: () => Promise<void>}) {
+  const [apiKey, setApiKey] = useState('');
+  const [keyError, setKeyError] = useState('');
   const [entries, setEntries] = useState<Entry[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -68,6 +71,18 @@ export default function ProjectCaptures({project, endpoint, onRevoke}: {project:
     finally {if (!abort.signal.aborted) setBusy(false);}
   }
   useEffect(() => {void load(); return () => controller.current?.abort();}, [project.id, endpoint]);
+  useEffect(() => {
+    const abort = new AbortController();
+    setApiKey(''); setKeyError('');
+    if (!project.revoked) void fetch(`${endpoint}/v1/keys/${project.id}`, {credentials:'include', signal:abort.signal})
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(response.status === 401 ? 'Your session expired. Return to Console and reconnect your wallet.' : data.error ?? 'Unable to load API key');
+        if (typeof data.apiKey !== 'string' || !data.apiKey) throw new Error('Unable to load API key');
+        setApiKey(data.apiKey);
+      }).catch(e => {if (!abort.signal.aborted) setKeyError(e.message);});
+    return () => abort.abort();
+  }, [project.id, project.revoked, endpoint]);
   return <>
     <Head><title>{project.name} | Console</title></Head>
     <nav aria-label="Breadcrumb" className={styles.breadcrumb}><Link to="/console">Console</Link><span aria-hidden="true"> / </span><span>{project.name}</span></nav>
@@ -79,6 +94,7 @@ export default function ProjectCaptures({project, endpoint, onRevoke}: {project:
         void onRevoke().catch(e => setError(e instanceof Error ? e.message : 'Unable to revoke API key')).finally(() => setRevoking(false));
       }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7"/></svg></button>}
     </header>
+    {!project.revoked && (apiKey ? <ApiKeyBox apiKey={apiKey}/> : keyError ? <p role="alert" className="alert alert--danger">{keyError}</p> : <p role="status">Loading API key…</p>)}
     <section aria-labelledby="captures-title">
       <div className={styles.toolbar}><div><h2 id="captures-title">Failed capture contexts</h2><p className={styles.subtitle}>Stored validator evaluations from failed transaction builds.</p></div><button type="button" className={styles.iconButton} aria-label="Refresh captures" title="Refresh captures" disabled={busy} onClick={() => void load()}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9"/></svg></button></div>
       {error && <p role="alert" className="alert alert--danger">{error}</p>}

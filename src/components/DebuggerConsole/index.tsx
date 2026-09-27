@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useLocation} from '@docusaurus/router';
 import Link from '@docusaurus/Link';
+import ApiKeyBox from './ApiKeyBox';
 import ProjectCaptures from './ProjectCaptures';
 import CliLoginApproval from './CliLoginApproval';
 import WalletPicker from './WalletPicker';
@@ -87,7 +88,7 @@ export default function DebuggerConsole({projectPage = false}: {projectPage?: bo
       }}/>
     </> : <>
       {validCliLogin && <CliLoginApproval key={cliLogin} id={cliLogin!} endpoint={endpoint} projects={keys} onCreate={openCreate}/>}
-      {secret && <div className="alert alert--warning margin-top--md"><p>Copy this API key now, or install it later using helios login.</p><code style={{overflowWrap:'anywhere'}}>{secret}</code><p><button onClick={() => setSecret('')}>Dismiss secret</button></p></div>}
+      {secret && <ApiKeyBox apiKey={secret}/>}
       <div className={styles.toolbar}>
         <div><h2 id="projects-title">Projects</h2><p className={styles.subtitle}>Manager your Debugger API keys</p></div>
         {activeKeys.length > 0 && <button className="button button--primary" disabled={busy} onClick={openCreate}>New project</button>}
