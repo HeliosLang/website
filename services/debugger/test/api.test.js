@@ -472,3 +472,20 @@ test('website capture browsing is wallet scoped, failed-only, paginated and surv
     f.objects.clear();
     assert.equal((await f.request(`${path}/${ids[1]}`,'GET',undefined,session)).status,404);
 });
+
+test("compilation metadata round-trips through API-key and project-owner routes", async()=>{
+    const f=fixture(), session=await login(f)
+    const key=await (await f.request("keys","POST",{name:"parameters"},session)).json()
+    const auth={Authorization:`Bearer ${key.apiKey}`}
+    const compilation=JSON.parse(readFileSync(new URL("./compilation.json",import.meta.url),"utf8"))
+    const capture={version:1,captureId:crypto.randomUUID(),status:"failed",evaluations:[{
+        phase:"validation",scriptHash:"11".repeat(28),programCbor:"01",plutusVersion:"PlutusScriptV2",arguments:["00"],
+        evaluation:{costModel:"explicit",costModelParams:[1],uplcVersion:"0.7.20"},result:{error:"quorum"},budget:{cpu:"1",mem:"1"},compilation
+    }]}
+    assert.equal((await f.request("captures","POST",capture,auth)).status,201)
+    for(const [path,credentials] of [[`captures/${capture.captureId}`,auth],[`keys/${key.id}/captures/${capture.captureId}`,session]])
+        assert.deepEqual(await (await f.request(path,"GET",undefined,credentials)).json(),capture)
+    capture.captureId=crypto.randomUUID()
+    capture.evaluations[0].compilation.parameters={"oracle_delegate::ORACLE_KEYS":"zz"}
+    assert.equal((await f.request("captures","POST",capture,auth)).status,400)
+})

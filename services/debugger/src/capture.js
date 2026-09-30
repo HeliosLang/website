@@ -1,3 +1,4 @@
+import { validCompilationContext } from "./compilation.js"
 const hex = (value) =>
     typeof value === "string" && /^(?:[0-9a-f]{2})+$/.test(value)
 const object = (value) =>
@@ -22,6 +23,7 @@ export function validCapture(c) {
     return c.evaluations.every(
         (e) =>
             object(e) &&
+            (e.compilation === undefined || validCompilationContext(e.compilation)) &&
             ["construction", "validation"].includes(e.phase) &&
             typeof e.scriptHash === "string" &&
             /^[a-f0-9]{56}$/.test(e.scriptHash) &&

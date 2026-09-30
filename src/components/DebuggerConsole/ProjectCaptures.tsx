@@ -1,3 +1,4 @@
+import type {CompilationContext} from './compilation';
 import React, {useEffect, useRef, useState} from 'react';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
@@ -5,11 +6,12 @@ import ApiKeyBox from './ApiKeyBox';
 import styles from './projects.module.css';
 
 type Project = {id: string; name: string; created_at: number; revoked: number};
-type Evaluation = {phase: string; scriptHash: string; arguments: string[]; result: {error?: string}; sourceMap?: {sourceNames?: string[]}; companion?: {sourceMap?: {sourceNames?: string[]}}};
+type Evaluation = {compilation?: CompilationContext; phase: string; scriptHash: string; arguments: string[]; result: {error?: string}; sourceMap?: {sourceNames?: string[]}; companion?: {sourceMap?: {sourceNames?: string[]}}};
 type Capture = {captureId: string; evaluations: Evaluation[]; sources?: Record<string,string>; error?: string | {message?: string}};
 type Entry = {captureId: string; createdAt: number; payload?: Capture; error?: string};
 function captureError(capture: Capture) {return typeof capture.error === 'string' ? capture.error : capture.error?.message;}
 function validatorName(capture: Capture, evaluation: Evaluation) {
+  if (evaluation.compilation) return evaluation.compilation.validator.name;
   const names = new Set([...(evaluation.sourceMap?.sourceNames ?? []), ...(evaluation.companion?.sourceMap?.sourceNames ?? [])]);
   const validators = new Set<string>();
   for (const name of names) {

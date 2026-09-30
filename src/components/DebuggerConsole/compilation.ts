@@ -1,0 +1,2 @@
+export type CompilationOptions = {hashDependencies: Record<string,string>; dependsOnOwnHash: boolean; validatorIndices?: Record<string,number>; ownHash?: string}
+export type CompilationContext = {version:1; compilerVersion:string; validator:{name:string;purpose:string}; parameters:Record<string,string>; isTestnet:boolean; validatorTypes:Record<string,string>; optimized:CompilationOptions; unoptimized:CompilationOptions}

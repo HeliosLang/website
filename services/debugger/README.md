@@ -53,3 +53,7 @@ Website-only endpoints, requiring the exact website Origin and session cookie:
 - `GET /v1/keys/:id/captures/:captureId`: the stored capture payload.
 
 These endpoints enforce wallet ownership and never recover or expose project API keys. Successful and expired captures are excluded. API-key-authenticated CLI feeds keep their existing routes and behavior.
+
+## Compilation metadata
+
+Capture v1 accepts optional per-evaluation `compilation` metadata version 1. The pure validator in `src/compilation.js` mirrors tx-utils' wire contract. R2 retains this object unchanged and both project-owner and API-key retrieval return it; D1 indexing is unchanged. Existing captures without metadata remain valid. Deploy this reader/validator before releasing metadata-producing tx-utils and contract-utils builds.
